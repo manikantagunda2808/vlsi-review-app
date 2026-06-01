@@ -1,0 +1,40 @@
+rules:
+  - id: UVM001
+    severity: violation
+    rule: "Use `uvm_info, `uvm_warning, `uvm_error macros — never use uvm_report_* directly"
+
+  - id: UVM002
+    severity: violation
+    rule: "All components must use `uvm_component_utils macro for factory registration"
+
+  - id: UVM003
+    severity: violation
+    rule: "All sequence items must use `uvm_object_utils macro"
+
+  - id: UVM004
+    severity: violation
+    rule: "Driver must use get_next_item / item_done handshake — no get() alone"
+
+  - id: UVM005
+    severity: violation
+    rule: "No hardcoded delays in driver — use clocking block or @(posedge clk)"
+
+  - id: UVM006
+    severity: violation
+    rule: "Sequencer must not be bypassed — all stimulus must go through sequencer"
+
+  - id: UVM007
+    severity: warning
+    rule: "Factory overrides must be used — no hardcoded type names in env"
+
+  - id: UVM008
+    severity: violation
+    rule: "Covergroup must cover all FSM states and key transaction fields"
+
+  - id: UVM009
+    severity: violation
+    rule: "All phases must call super.<phase_name>() — e.g. super.build_phase(phase)"
+
+  - id: UVM010
+    severity: violation
+    rule: "Objection must be raised in pre_start and dropped in post_start"

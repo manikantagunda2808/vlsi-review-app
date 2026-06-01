@@ -1,0 +1,33 @@
+rules:
+- id: RTL001
+  rule: No latches — every always_ff/always block must have complete assignments
+    in all branches
+  severity: violation
+- id: RTL002
+  rule: All case statements must have a default branch
+  severity: violation
+- id: RTL003
+  rule: Reset must be asynchronous and active-low (negedge rst_n)
+  severity: violation
+- id: RTL004
+  rule: Use always_ff for sequential, always_comb for combinational — not plain
+    always
+  severity: violation
+- id: RTL005
+  rule: Port names must follow i_ prefix for inputs, o_ prefix for outputs
+  severity: warning
+- id: RTL006
+  rule: No X assignments — all signals must have a defined reset state
+  severity: violation
+- id: RTL007
+  rule: No multi-driven nets — each signal driven by only one always block
+  severity: violation
+- id: RTL008
+  rule: No unused signals or ports
+  severity: warning
+- id: RTL009
+  rule: Module name must match filename
+  severity: warning
+- id: RTL010
+  rule: Parameters must be used for widths — no hardcoded numbers in port declarations
+  severity: warning

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+supabase
+groq
+pyyaml
+python-dotenv
+python-jose
+passlib

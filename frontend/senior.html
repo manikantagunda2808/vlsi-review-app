@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLSI Review — Senior</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b12; --surface: #0f1520; --surface2: #161d2e;
+      --border: #1e2a40; --accent: #4f8ef7; --accent2: #7c4dff;
+      --success: #00c896; --warn: #f5a623; --danger: #ff4d6d;
+      --text: #e2e8f0; --muted: #5a6a85;
+      --mono: 'JetBrains Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+    .navbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 2rem; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .navbar-brand { display: flex; align-items: center; gap: 10px; }
+    .logo { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+    .role-pill {
+      font-size: 10px; padding: 3px 8px; border-radius: 20px;
+      background: rgba(245,166,35,0.15); color: var(--warn);
+      font-family: var(--mono); border: 1px solid rgba(245,166,35,0.3);
+    }
+    .navbar-right { display: flex; align-items: center; gap: 1.5rem; }
+    .user-name { font-size: 13px; color: var(--muted); }
+    .logout-btn { font-size: 12px; color: var(--danger); cursor: pointer; font-family: var(--mono); }
+    .main-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 2rem; }
+    .main-tab {
+      padding: 14px 20px; font-size: 13px; font-weight: 600;
+      cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .main-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+    label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 6px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; }
+    select, textarea, input[type="text"] {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      padding: 10px 12px; outline: none; margin-bottom: 1.2rem; font-family: var(--sans);
+    }
+    select:focus, textarea:focus, input:focus { border-color: var(--accent); }
+    textarea { font-family: var(--mono); resize: vertical; }
+    .btn-primary {
+      padding: 10px 20px; background: var(--accent); color: white;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-danger {
+      padding: 8px 14px; background: transparent; color: var(--danger);
+      border: 1px solid var(--danger); border-radius: 8px; font-size: 12px; cursor: pointer;
+    }
+    .btn-secondary {
+      padding: 8px 14px; background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 8px; font-size: 12px; cursor: pointer; margin-left: 8px;
+    }
+    .stats-row { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+    .stat-card {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem; text-align: center;
+    }
+    .stat-card .num { font-size: 28px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+    .stat-card .lbl { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: var(--mono); text-transform: uppercase; }
+    .history-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 10px;
+    }
+    .history-card .meta { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+    .badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; font-family: var(--mono); }
+    .badge.rtl { background: rgba(79,142,247,0.15); color: var(--accent); }
+    .badge.sv { background: rgba(0,200,150,0.15); color: var(--success); }
+    .badge.verilog_tb { background: rgba(0,200,150,0.15); color: var(--success); }
+    .badge.tb { background: rgba(0,200,150,0.15); color: var(--success); }
+    .badge.uvm { background: rgba(124,77,255,0.15); color: #9c8fff; }
+    .badge.mixed { background: rgba(245,166,35,0.15); color: var(--warn); }
+    .junior-name { font-size: 13px; color: var(--text); font-weight: 600; }
+    .date { font-size: 11px; color: var(--muted); margin-left: auto; font-family: var(--mono); }
+    .score-pill { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; font-family: var(--mono); }
+    .sc-good { background: rgba(0,200,150,0.15); color: var(--success); }
+    .sc-warn { background: rgba(245,166,35,0.15); color: var(--warn); }
+    .sc-bad { background: rgba(255,77,109,0.15); color: var(--danger); }
+    .assignment-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 10px;
+    }
+    .assignment-card .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .aname { font-size: 15px; font-weight: 600; color: var(--text); }
+    .adesc { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 1rem 0 8px; font-family: var(--mono); }
+    .rule-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+    }
+    .rule-id { font-family: var(--mono); font-size: 11px; background: var(--surface2); padding: 2px 6px; border-radius: 4px; color: var(--accent); flex-shrink: 0; }
+    .rule-text { font-size: 13px; color: var(--text); flex: 1; }
+    .sev-violation { color: var(--danger); font-size: 11px; font-family: var(--mono); flex-shrink: 0; }
+    .sev-warning { color: var(--warn); font-size: 11px; font-family: var(--mono); flex-shrink: 0; }
+    .rule-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; padding: 0 2px; flex-shrink: 0; opacity: 0.5; }
+    .rule-del:hover { opacity: 1; }
+    .filter-row { display: flex; gap: 10px; margin-bottom: 1rem; }
+    .filter-row select { margin-bottom: 0; }
+    .loading { color: var(--muted); font-size: 13px; font-family: var(--mono); }
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; width: 600px;
+      max-height: 80vh; overflow-y: auto;
+    }
+    .modal h3 { font-size: 16px; color: var(--text); margin-bottom: 1rem; font-weight: 700; }
+    .modal-footer { display: flex; gap: 8px; margin-top: 1rem; }
+
+    /* Chat */
+    .chat-container {
+      display: flex; flex-direction: column;
+      height: calc(100vh - 120px); max-width: 800px; margin: 0 auto; padding: 1.5rem;
+    }
+    .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+    .suggestion-btn {
+      padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 12px; color: var(--muted); cursor: pointer;
+      font-family: var(--mono); transition: all 0.15s;
+    }
+    .suggestion-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 1rem; }
+    .chat-msg { max-width: 75%; padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.7; }
+    .chat-msg.user { background: var(--accent2); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-msg.assistant { background: var(--surface); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+    .chat-input-row { display: flex; gap: 10px; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .chat-input-row input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px;
+      padding: 12px 16px; outline: none; font-family: var(--sans);
+    }
+    .chat-input-row input:focus { border-color: var(--accent); }
+    .chat-send { padding: 12px 22px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); font-size: 12px; color: #9c8fff; }
+    pre { background: var(--surface2); padding: 12px; border-radius: 8px; font-family: var(--mono); font-size: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--border); color: #a8d8a8; }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="navbar-brand">
+    <span class="logo">⚡ VLSI</span>
+    <span class="role-pill">SENIOR</span>
+  </div>
+  <div class="navbar-right">
+    <span class="user-name" id="welcomeMsg"></span>
+    <span class="logout-btn" onclick="logout()">logout →</span>
+  </div>
+</div>
+
+  <div class="main-tabs">
+    <div class="main-tab active" onclick="switchMain('reviews')">📊 All Reviews</div>
+    <div class="main-tab" onclick="switchMain('assignments')">📋 Assignments</div>
+    <div class="main-tab" onclick="switchMain('rules')">⚙️ Global Rules</div>
+    <div class="main-tab" onclick="switchMain('users')">👥 Users</div>
+    <div class="main-tab" onclick="switchMain('chat')">💬 AI Chat</div>
+  </div>
+
+<!-- All Reviews -->
+<div class="panel active" id="reviewsPanel">
+  <div class="container">
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="statTotal">-</div><div class="lbl">Total Reviews</div></div>
+      <div class="stat-card"><div class="num" id="statAvg">-</div><div class="lbl">Avg Score</div></div>
+      <div class="stat-card"><div class="num" id="statViolations">-</div><div class="lbl">Violations</div></div>
+    </div>
+    <div class="filter-row">
+      <select id="filterType" onchange="filterReviews()">
+        <option value="all">All Types</option>
+        <option value="rtl">RTL</option>
+        <option value="sv">SV</option>
+        <option value="verilog_tb">Verilog TB</option>
+        <option value="uvm">UVM</option>
+        <option value="mixed">Mixed</option>
+      </select>
+    </div>
+    <div id="allReviewsList"><p class="loading">Loading reviews...</p></div>
+  </div>
+</div>
+
+<!-- Assignments -->
+<div class="panel" id="assignmentsPanel">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <span style="font-size:14px;color:var(--muted)">Manage assignments for juniors</span>
+      <button class="btn-primary" onclick="openCreateModal()">+ New Assignment</button>
+    </div>
+    <div id="assignmentsList"><p class="loading">Loading...</p></div>
+  </div>
+</div>
+
+<!-- Global Rules -->
+<div class="panel" id="rulesPanel">
+  <div class="container">
+    <label>Select Rule Type</label>
+    <select id="ruleType" onchange="loadRules()">
+      <option value="rtl">RTL</option>
+      <option value="sv">SV</option>
+      <option value="verilog_tb">Verilog TB</option>
+      <option value="uvm">UVM</option>
+    </select>
+    <div id="rulesList"></div>
+    <div style="margin-top:1.5rem">
+      <div class="section-title">Add New Rule</div>
+      <label>Rule ID</label>
+      <input type="text" id="newRuleId" placeholder="e.g. RTL011">
+      <label>Severity</label>
+      <select id="newSeverity">
+        <option value="violation">Violation</option>
+        <option value="warning">Warning</option>
+      </select>
+      <label>Rule Description</label>
+      <textarea id="newRuleText" style="min-height:80px" placeholder="Describe the rule..."></textarea>
+      <button class="btn-primary" onclick="addRule()">Add Rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Users -->
+<div class="panel" id="usersPanel">
+  <div class="container">
+    <div style="margin-bottom:1rem">
+      <span style="font-size:14px;color:var(--muted)">Manage all registered users</span>
+    </div>
+    <div id="usersList"><p class="loading">Loading users...</p></div>
+  </div>
+</div>
+
+<!-- Email Report Modal -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal" style="width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">📧</span>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">Email Review Report</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Send this review to one or more recipients</div>
+        </div>
+      </div>
+      <button onclick="closeEmailModal()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px;line-height:1">&times;</button>
+    </div>
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:1.2rem">
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--accent)" id="modalScore">-</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          <strong style="color:var(--text);display:block" id="modalUser">-</strong>
+          <span id="modalSummary">No review data</span>
+        </div>
+      </div>
+    </div>
+
+    <label style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+      <span style="color:var(--danger)">*</span> To
+    </label>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:1.2rem;cursor:text" onclick="document.getElementById('recipientInput').focus()">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center" id="recipientTags"></div>
+      <input type="text" id="recipientInput" placeholder="Type email and press Enter" style="border:none;background:transparent;color:var(--text);font-size:13px;outline:none;padding:4px 2px;min-width:200px;flex:1;width:100%">
+    </div>
+
+    <div id="emailStatus" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:1rem;font-size:13px;font-weight:500"></div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1rem">
+      <button onclick="closeEmailModal()" style="padding:10px 20px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button class="btn-primary" id="sendEmailBtn" onclick="sendEmailReport()" style="width:auto;min-width:130px">Send Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Chat -->
+<div class="panel" id="chatPanel">
+  <div class="chat-container">
+    <div class="suggestions">
+      <button class="suggestion-btn" onclick="askSuggestion(this)">Explain PCIe LTSSM states</button>
+      <button class="suggestion-btn" onclick="askSuggestion(this)">UVM sequence vs sequencer</button>
+      <button class="suggestion-btn" onclick="askSuggestion(this)">AXI4 vs AXI4-Lite differences</button>
+      <button class="suggestion-btn" onclick="askSuggestion(this)">What causes setup time violation?</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg assistant">
+        👋 Hi! I'm your VLSI assistant. Ask me anything about protocols, verification methodology, RTL design, or code review best practices.
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask a VLSI question..." onkeydown="if(event.key==='Enter') sendChat()">
+      <button class="chat-send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Assignment Modal -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <h3>Create New Assignment</h3>
+    <label>Assignment Name</label>
+    <input type="text" id="aName" placeholder="e.g. Serial Adder — SIPO/PISO">
+    <label>Description</label>
+    <textarea id="aDesc" style="min-height:60px" placeholder="Brief description..."></textarea>
+    <div class="section-title">RTL Specific Rules</div>
+    <div id="aRtlRules"></div>
+    <button class="btn-secondary" onclick="addAssignmentRule('rtl')">+ Add RTL Rule</button>
+    <div class="section-title" style="margin-top:1rem">SV Specific Rules</div>
+    <div id="aSvRules"></div>
+    <button class="btn-secondary" onclick="addAssignmentRule('sv')">+ Add SV Rule</button>
+    <div class="section-title" style="margin-top:1rem">Verilog TB Specific Rules</div>
+    <div id="aVerilogTbRules"></div>
+    <button class="btn-secondary" onclick="addAssignmentRule('verilog_tb')">+ Add Verilog TB Rule</button>
+    <div class="section-title" style="margin-top:1rem">UVM Specific Rules</div>
+    <div id="aUvmRules"></div>
+    <button class="btn-secondary" onclick="addAssignmentRule('uvm')">+ Add UVM Rule</button>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="saveAssignment()">Create Assignment</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+  const token = localStorage.getItem("token");
+  const name = localStorage.getItem("name");
+  const role = localStorage.getItem("role");
+  if (!token || role !== "senior") window.location.href = "/";
+  document.getElementById("welcomeMsg").textContent = name;
+
+  let allReviews = [];
+  let assignmentRules = { rtl: [], sv: [], uvm: [], verilog_tb: [] };
+  let chatHistory = [];
+
+  function logout() { localStorage.clear(); window.location.href = "/"; }
+
+  function switchMain(tab) {
+    const tabs = ["reviews", "assignments", "rules", "users", "chat"];
+    document.querySelectorAll(".main-tab").forEach((t, i) => t.classList.toggle("active", tabs[i] === tab));
+    tabs.forEach(t => document.getElementById(`${t}Panel`).classList.toggle("active", t === tab));
+    if (tab === "assignments") loadAssignments();
+    if (tab === "rules") loadRules();
+    if (tab === "users") loadUsers();
+  }
+
+  // Reviews
+  async function loadAllReviews() {
+    const res = await fetch(`${API}/history/all`, { headers: { "Authorization": `Bearer ${token}` } });
+    if (res.ok) {
+      allReviews = await res.json();
+      updateStats(allReviews);
+      renderReviews(allReviews);
+    }
+  }
+
+  function updateStats(data) {
+    document.getElementById("statTotal").textContent = data.length;
+    const avg = data.length ? (data.reduce((s, r) => s + r.score, 0) / data.length).toFixed(1) : "-";
+    document.getElementById("statAvg").textContent = avg;
+    document.getElementById("statViolations").textContent = data.reduce((s, r) => s + (r.violations ? r.violations.length : 0), 0);
+  }
+
+  function filterReviews() {
+    const type = document.getElementById("filterType").value;
+    renderReviews(type === "all" ? allReviews : allReviews.filter(r => r.review_type === type));
+  }
+
+  let reviewToEmail = null;
+
+  function renderReviews(data) {
+    if (!data.length) { document.getElementById("allReviewsList").innerHTML = "<p class='loading'>No reviews found.</p>"; return; }
+    let html = "";
+    data.forEach(r => {
+      const cls = r.score >= 7 ? "sc-good" : r.score >= 5 ? "sc-warn" : "sc-bad";
+      html += `
+        <div class="history-card">
+          <div class="meta">
+            <span class="junior-name">${r.user_name}</span>
+            <span class="badge ${r.review_type}">${r.review_type.toUpperCase()}</span>
+            <span class="score-pill ${cls}">${r.score}/10</span>
+            <span class="date">${new Date(r.created_at).toLocaleDateString()}</span>
+          </div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px">${r.summary}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+            <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${r.violations ? r.violations.length : 0} violations · ${r.warnings ? r.warnings.length : 0} warnings</div>
+            <button class="btn-primary" style="width:auto;padding:5px 12px;font-size:11px" onclick="emailReview('${r.id}')">📧 Email Report</button>
+          </div>
+        </div>`;
+    });
+    document.getElementById("allReviewsList").innerHTML = html;
+  }
+
+  async function emailReview(reviewId) {
+    const review = allReviews.find(r => r.id === reviewId);
+    if (!review) return;
+    reviewToEmail = {
+      score: review.score,
+      violations: review.violations || [],
+      warnings: review.warnings || [],
+      passed: review.passed || [],
+      summary: review.summary
+    };
+    const s = document.getElementById("emailModal");
+    document.getElementById("modalScore").textContent = review.score;
+    document.getElementById("modalUser").textContent = review.user_name;
+    document.getElementById("modalSummary").textContent = `${reviewToEmail.violations.length} violations · ${reviewToEmail.warnings.length} warnings · ${reviewToEmail.passed.length} passed`;
+    s.classList.add("open");
+  }
+
+  function addRecipientTag(email) {
+    email = email.trim().toLowerCase();
+    if (!email) return;
+    const container = document.getElementById("recipientTags");
+    const existing = container.querySelectorAll(".recipient-tag");
+    for (let t of existing) {
+      if (t.dataset.email === email) return;
+    }
+    const tag = document.createElement("span");
+    tag.className = "recipient-tag";
+    tag.dataset.email = email;
+    tag.style.cssText = "display:inline-flex;align-items:center;gap:4px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--accent);font-family:var(--mono)";
+    tag.innerHTML = `${email}<span onclick="this.parentElement.remove()" style="cursor:pointer;margin-left:2px;font-size:14px;line-height:1;opacity:0.6;color:var(--muted)">&times;</span>`;
+    container.appendChild(tag);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("recipientInput");
+    if (!input) return;
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        const val = input.value.replace(/,/g, "").trim();
+        if (val) { addRecipientTag(val); input.value = ""; }
+      }
+      if (e.key === "Backspace" && !input.value) {
+        const tags = document.getElementById("recipientTags");
+        const last = tags.lastElementChild;
+        if (last) last.remove();
+      }
+    });
+    input.addEventListener("blur", () => {
+      const val = input.value.trim();
+      if (val) { addRecipientTag(val); input.value = ""; }
+    });
+  });
+
+  function getRecipients() {
+    const tags = document.querySelectorAll("#recipientTags .recipient-tag");
+    return Array.from(tags).map(t => t.dataset.email).filter(e => e);
+  }
+
+  function openEmailModal() {
+    document.getElementById("recipientTags").innerHTML = "";
+    document.getElementById("recipientInput").value = "";
+    document.getElementById("emailStatus").style.display = "none";
+    document.getElementById("sendEmailBtn").disabled = false;
+    document.getElementById("sendEmailBtn").textContent = "Send Report";
+    document.getElementById("emailModal").classList.add("open");
+    setTimeout(() => document.getElementById("recipientInput").focus(), 100);
+  }
+
+  function closeEmailModal() {
+    document.getElementById("emailModal").classList.remove("open");
+  }
+
+  async function sendEmailReport() {
+    const recipients = getRecipients();
+    if (!recipients.length) { document.getElementById("recipientInput").focus(); return; }
+
+    const btn = document.getElementById("sendEmailBtn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    const res = await fetch(`${API}/review/email-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ recipients, review_result: reviewToEmail, user_name: name })
+    });
+
+    const status = document.getElementById("emailStatus");
+    document.getElementById("sendEmailBtn").disabled = false;
+    if (res.ok) {
+      status.textContent = "✅ Report sent successfully!";
+      status.style.background = "rgba(0,200,150,0.1)";
+      status.style.color = "var(--success)";
+      status.style.border = "1px solid rgba(0,200,150,0.3)";
+      status.style.display = "block";
+      btn.textContent = "Done";
+      setTimeout(() => { document.getElementById("emailModal").classList.remove("open"); }, 1500);
+    } else {
+      const data = await res.json();
+      status.textContent = "❌ " + (data.detail || "Failed to send email");
+      status.style.background = "rgba(255,77,109,0.1)";
+      status.style.color = "var(--danger)";
+      status.style.border = "1px solid rgba(255,77,109,0.3)";
+      status.style.display = "block";
+      btn.textContent = "Send Report";
+    }
+  }
+
+  // Assignments
+  async function loadAssignments() {
+    const res = await fetch(`${API}/assignments/`, { headers: { "Authorization": `Bearer ${token}` } });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.length) { document.getElementById("assignmentsList").innerHTML = "<p class='loading'>No assignments yet.</p>"; return; }
+      let html = "";
+      data.forEach(a => {
+        html += `
+          <div class="assignment-card">
+            <div class="top">
+              <span class="aname">${a.name}</span>
+              <button class="btn-danger" onclick="deleteAssignment('${a.id}')">Delete</button>
+            </div>
+            <div class="adesc">${a.description || "No description"}</div>
+            <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">
+              RTL: ${a.rtl_rules ? a.rtl_rules.length : 0} · SV: ${a.sv_rules ? a.sv_rules.length : 0} · UVM: ${a.uvm_rules ? a.uvm_rules.length : 0} · Verilog TB: ${a.verilog_tb_rules ? a.verilog_tb_rules.length : 0} rules
+            </div>
+          </div>`;
+      });
+      document.getElementById("assignmentsList").innerHTML = html;
+    }
+  }
+
+  async function deleteAssignment(id) {
+    if (!confirm("Delete this assignment?")) return;
+    await fetch(`${API}/assignments/${id}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
+    loadAssignments();
+  }
+
+  function openCreateModal() {
+    assignmentRules = { rtl: [], sv: [], uvm: [], verilog_tb: [] };
+    document.getElementById("aName").value = "";
+    document.getElementById("aDesc").value = "";
+    ["Rtl", "Sv", "Uvm", "VerilogTb"].forEach(t => document.getElementById(`a${t}Rules`).innerHTML = "");
+    document.getElementById("createModal").classList.add("open");
+  }
+
+  function closeModal() { document.getElementById("createModal").classList.remove("open"); }
+
+  function addAssignmentRule(type) {
+    const camelId = type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+    const container = document.getElementById(`a${camelId}Rules`);
+    const idx = assignmentRules[type].length;
+    assignmentRules[type].push({ id: "", severity: "violation", rule: "" });
+    const div = document.createElement("div");
+    div.style.cssText = "display:flex;gap:8px;margin-bottom:8px;align-items:flex-start";
+    div.innerHTML = `
+      <input type="text" placeholder="${type.toUpperCase()}A0${idx+1}" style="width:120px;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].id=this.value">
+      <select style="width:110px;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].severity=this.value">
+        <option value="violation">Violation</option>
+        <option value="warning">Warning</option>
+      </select>
+      <input type="text" placeholder="Rule description" style="flex:1;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].rule=this.value">`;
+    container.appendChild(div);
+  }
+
+  async function saveAssignment() {
+    const aName = document.getElementById("aName").value.trim();
+    const desc = document.getElementById("aDesc").value.trim();
+    if (!aName) return alert("Assignment name is required.");
+    const res = await fetch(`${API}/assignments/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({
+        name: aName, description: desc,
+        rtl_rules: assignmentRules.rtl.filter(r => r.id && r.rule),
+        sv_rules: assignmentRules.sv.filter(r => r.id && r.rule),
+        uvm_rules: assignmentRules.uvm.filter(r => r.id && r.rule),
+        verilog_tb_rules: assignmentRules.verilog_tb.filter(r => r.id && r.rule)
+      })
+    });
+    if (res.ok) { closeModal(); loadAssignments(); }
+    else alert("Failed to create assignment.");
+  }
+
+  // Global Rules
+  async function loadRules() {
+    const type = document.getElementById("ruleType").value;
+    try {
+      const res = await fetch(`${API}/rules/${type}`);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`GET failed: ${res.status} - ${errText}`);
+      }
+      const data = await res.json();
+      let html = `<div class="section-title">Current Rules</div>`;
+      data.rules.forEach(r => {
+        html += `
+          <div class="rule-item">
+            <span class="rule-id">${r.id}</span>
+            <span class="rule-text">${r.rule}</span>
+            <span class="sev-${r.severity}" style="cursor:pointer" onclick="toggleSeverity('${type}','${r.id}','${r.severity}')" title="Click to toggle severity">${r.severity}</span>
+            <button class="rule-del" onclick="deleteRule('${type}','${r.id}')" title="Delete rule">✕</button>
+          </div>`;
+      });
+      document.getElementById("rulesList").innerHTML = html;
+    } catch (err) {
+      console.error("loadRules error:", err);
+      alert("Failed to load rules: " + err.message);
+    }
+  }
+
+  async function addRule() {
+    const type = document.getElementById("ruleType").value;
+    const id = document.getElementById("newRuleId").value.trim();
+    const severity = document.getElementById("newSeverity").value;
+    const rule = document.getElementById("newRuleText").value.trim();
+    if (!id || !rule) return alert("Fill in Rule ID and description.");
+    try {
+      const getRes = await fetch(`${API}/rules/${type}`);
+      if (!getRes.ok) {
+        const errText = await getRes.text();
+        throw new Error(`GET failed: ${getRes.status} - ${errText}`);
+      }
+      const existing = await getRes.json();
+      existing.rules.push({ id, severity, rule });
+      const res = await fetch(`${API}/rules/${type}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(existing)
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`PUT failed: ${res.status} - ${errText}`);
+      }
+      document.getElementById("newRuleId").value = "";
+      document.getElementById("newRuleText").value = "";
+      loadRules();
+    } catch (err) {
+      console.error("addRule error:", err);
+      alert("Failed to add rule: " + err.message);
+    }
+  }
+
+  async function deleteRule(type, ruleId) {
+    if (!confirm(`Delete rule ${ruleId}?`)) return;
+    try {
+      const res = await fetch(`${API}/rules/${type}/${ruleId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`DELETE failed: ${res.status} - ${errText}`);
+      }
+      loadRules();
+    } catch (err) {
+      console.error("deleteRule error:", err);
+      alert("Failed to delete rule: " + err.message);
+    }
+  }
+
+  async function toggleSeverity(type, ruleId, current) {
+    const next = current === "violation" ? "warning" : "violation";
+    if (!confirm(`Change rule ${ruleId} severity from ${current} to ${next}?`)) return;
+    try {
+      const res = await fetch(`${API}/rules/${type}/${ruleId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ severity: next })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`PATCH failed: ${res.status} - ${errText}`);
+      }
+      loadRules();
+    } catch (err) {
+      console.error("toggleSeverity error:", err);
+      alert("Failed to toggle severity: " + err.message);
+    }
+  }
+
+  // Users
+  async function loadUsers() {
+    const res = await fetch(`${API}/auth/users`, { headers: { "Authorization": `Bearer ${token}` } });
+    if (res.ok) {
+      const users = await res.json();
+      if (!users.length) { document.getElementById("usersList").innerHTML = "<p class='loading'>No users found.</p>"; return; }
+      let html = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
+                <th style="padding:12px 14px;text-align:left;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-size:10px">Name</th>
+                <th style="padding:12px 14px;text-align:left;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-size:10px">Email</th>
+                <th style="padding:12px 14px;text-align:left;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-size:10px">Role</th>
+                <th style="padding:12px 14px;text-align:left;color:var(--muted);font-family:var(--mono);text-transform:uppercase;font-size:10px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>`;
+      users.forEach(u => {
+        const rolePill = u.role === "senior"
+          ? '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(245,166,35,0.15);color:var(--warn);font-family:var(--mono)">SENIOR</span>'
+          : '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(79,142,247,0.15);color:var(--accent);font-family:var(--mono)">JUNIOR</span>';
+        html += `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:12px 14px;color:var(--text);font-weight:600">${u.name}</td>
+            <td style="padding:12px 14px;color:var(--muted);font-family:var(--mono);font-size:12px">${u.email}</td>
+            <td style="padding:12px 14px">${rolePill}</td>
+            <td style="padding:12px 14px">
+              <button class="btn-danger" onclick="deleteUser('${u.user_id}','${u.name}')" ${u.role === "senior" ? "disabled title='Cannot delete seniors'" : ""}>Delete</button>
+            </td>
+          </tr>`;
+      });
+      html += `</tbody></table></div>`;
+      document.getElementById("usersList").innerHTML = html;
+    }
+  }
+
+  async function deleteUser(userId, userName) {
+    if (!confirm(`Delete user "${userName}" permanently? This will remove all their reviews and their account.`)) return;
+    const res = await fetch(`${API}/auth/users/${userId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
+    if (res.ok) {
+      loadUsers();
+    } else {
+      const data = await res.json();
+      alert(data.detail || "Failed to delete user");
+    }
+  }
+
+  // AI Chat
+  function askSuggestion(btn) {
+    document.getElementById("chatInput").value = btn.textContent;
+    sendChat();
+  }
+
+  async function sendChat() {
+    const input = document.getElementById("chatInput");
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = "";
+    chatHistory.push({ role: "user", content: msg });
+    appendChatMsg("user", msg);
+    appendChatMsg("assistant", "...", "typingMsg");
+
+    const res = await fetch(`${API}/chat/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+
+    const typing = document.getElementById("typingMsg");
+    if (typing) typing.remove();
+
+    if (res.ok) {
+      const data = await res.json();
+      chatHistory.push({ role: "assistant", content: data.reply });
+      appendChatMsg("assistant", data.reply);
+    }
+  }
+
+  function appendChatMsg(role, text, id) {
+    const container = document.getElementById("chatMessages");
+    const div = document.createElement("div");
+    div.className = `chat-msg ${role}`;
+    if (id) div.id = id;
+    div.innerHTML = formatMarkdown(text);
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function formatMarkdown(text) {
+    return text
+      .replace(/```(\w+)?\n?([\s\S]*?)```/g, '<pre>$2</pre>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)/gm, '<li style="margin-left:16px;margin-bottom:4px">$1</li>')
+      .replace(/\n/g, '<br>');
+  }
+
+  loadAllReviews();
+</script>
+</body>
+</html>
