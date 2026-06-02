@@ -1,32 +1,50 @@
-import smtplib
-from email.mime.text import MIMEText
-from backend.config import SMTP_HOST, SMTP_PORT, SMTP_EMAIL, SMTP_LOGIN, SMTP_PASSWORD
+import json
+import urllib.request
+from backend.config import SMTP_EMAIL, SMTP_PASSWORD
 
-def send_otp_email(to_email: str, otp: str):
+BREVO_API = "https://api.brevo.com/v3/smtp/email"
+
+def _send_via_api(to_emails: list, subject: str, content: str, content_type: str = "textContent", reply_to: str | None = None):
     if not SMTP_EMAIL or not SMTP_PASSWORD:
-        print(f"\n=== SMTP not configured. OTP for {to_email}: {otp} ===\n")
+        print(f"\n=== SMTP not configured. Would send to {to_emails} ===\n")
         return
 
-    msg = MIMEText(f"Your OTP code is: {otp}\n\nThis code expires in 10 minutes.")
-    msg["Subject"] = "Your VLSI Review OTP"
-    msg["From"] = SMTP_EMAIL
-    msg["To"] = to_email
+    payload = {
+        "sender": {"email": SMTP_EMAIL},
+        "to": [{"email": e} for e in to_emails],
+        "subject": subject,
+        content_type: content,
+    }
+    if reply_to:
+        payload["replyTo"] = {"email": reply_to}
+
+    req = urllib.request.Request(
+        BREVO_API,
+        data=json.dumps(payload).encode(),
+        headers={
+            "api-key": SMTP_PASSWORD,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
 
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_LOGIN or SMTP_EMAIL, SMTP_PASSWORD)
-            server.send_message(msg)
-        print(f"OTP sent to {to_email}")
+        urllib.request.urlopen(req)
+        print(f"Email sent to {to_emails}")
     except Exception as e:
-        print(f"\n=== SMTP failed. OTP for {to_email}: {otp} ===\n")
-        print(f"SMTP error: {e}")
+        body = e.read().decode() if hasattr(e, "read") else ""
+        print(f"\n=== Email failed. To: {to_emails} ===\n")
+        print(f"Error: {e}\n{body}")
+
+def send_otp_email(to_email: str, otp: str):
+    _send_via_api(
+        to_emails=[to_email],
+        subject="Your VLSI Review OTP",
+        content=f"Your OTP code is: {otp}\n\nThis code expires in 10 minutes.",
+        content_type="textContent",
+    )
 
 def send_review_report(from_email: str, to_emails: list, user_name: str, result: dict):
-    if not SMTP_EMAIL or not SMTP_PASSWORD:
-        print(f"\n=== SMTP not configured. Would send report from {from_email} to {to_emails} ===\n")
-        return
-
     score = result.get("score", 0)
     violations = result.get("violations", [])
     warnings = result.get("warnings", [])
@@ -88,19 +106,10 @@ def send_review_report(from_email: str, to_emails: list, user_name: str, result:
     html += """<tr><td style="padding:20px;text-align:center;font-size:11px;color:#5a6a85">VLSI Review App · Auto-generated email</td></tr>
 </table></body></html>"""
 
-    msg = MIMEText(html, "html")
-    msg["Subject"] = f"VLSI Code Review Report — {user_name}"
-    msg["From"] = SMTP_EMAIL
-    msg["Reply-To"] = from_email
-    msg["To"] = ", ".join(to_emails)
-
-    try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_LOGIN or SMTP_EMAIL, SMTP_PASSWORD)
-            server.send_message(msg)
-        print(f"Review report sent from {from_email} to {to_emails}")
-    except Exception as e:
-        print(f"\n=== SMTP failed. Review report from {from_email} to {to_emails} ===\n")
-        print(f"SMTP error: {e}")
-        raise
+    _send_via_api(
+        to_emails=to_emails,
+        subject=f"VLSI Code Review Report — {user_name}",
+        content=html,
+        content_type="htmlContent",
+        reply_to=from_email,
+    )
