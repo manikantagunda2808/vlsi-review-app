@@ -1,6 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
-from backend.config import SMTP_EMAIL, SMTP_PASSWORD
+from backend.config import SMTP_HOST, SMTP_PORT, SMTP_EMAIL, SMTP_LOGIN, SMTP_PASSWORD
 
 def send_otp_email(to_email: str, otp: str):
     if not SMTP_EMAIL or not SMTP_PASSWORD:
@@ -13,9 +13,9 @@ def send_otp_email(to_email: str, otp: str):
     msg["To"] = to_email
 
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.starttls()
-            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.login(SMTP_LOGIN or SMTP_EMAIL, SMTP_PASSWORD)
             server.send_message(msg)
         print(f"OTP sent to {to_email}")
     except Exception as e:
@@ -95,9 +95,9 @@ def send_review_report(from_email: str, to_emails: list, user_name: str, result:
     msg["To"] = ", ".join(to_emails)
 
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.starttls()
-            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.login(SMTP_LOGIN or SMTP_EMAIL, SMTP_PASSWORD)
             server.send_message(msg)
         print(f"Review report sent from {from_email} to {to_emails}")
     except Exception as e:
