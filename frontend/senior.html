@@ -8,7 +8,7 @@
   <style>
     :root {
       --bg: #f4f6f9; --surface: #ffffff; --surface2: #eef1f5;
-      --border: #d1d5db; --accent: #4f8ef7; --accent2: #7c4dff;
+      --border: #d1d5db; --accent: #2D3270; --accent2: #2D3270;
       --success: #16a34a; --warn: #d97706; --danger: #dc2626;
       --text: #1f2937; --muted: #6b7280;
       --mono: 'JetBrains Mono', monospace; --sans: 'Syne', sans-serif;
@@ -73,7 +73,7 @@
     }
     .history-card .meta { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
     .badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; font-family: var(--mono); }
-    .badge.rtl { background: rgba(79,142,247,0.15); color: var(--accent); }
+    .badge.rtl { background: rgba(45,50,112,0.15); color: var(--accent); }
     .badge.sv { background: rgba(0,200,150,0.15); color: var(--success); }
     .badge.verilog_tb { background: rgba(0,200,150,0.15); color: var(--success); }
     .badge.tb { background: rgba(0,200,150,0.15); color: var(--success); }
@@ -428,7 +428,7 @@
     const tag = document.createElement("span");
     tag.className = "recipient-tag";
     tag.dataset.email = email;
-    tag.style.cssText = "display:inline-flex;align-items:center;gap:4px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--accent);font-family:var(--mono)";
+    tag.style.cssText = "display:inline-flex;align-items:center;gap:4px;background:rgba(45,50,112,0.15);border:1px solid rgba(45,50,112,0.3);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--accent);font-family:var(--mono)";
     tag.innerHTML = `${email}<span onclick="this.parentElement.remove()" style="cursor:pointer;margin-left:2px;font-size:14px;line-height:1;opacity:0.6;color:var(--muted)">&times;</span>`;
     container.appendChild(tag);
   }
@@ -702,7 +702,7 @@
       users.forEach(u => {
         const rolePill = u.role === "senior"
           ? '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(245,166,35,0.15);color:var(--warn);font-family:var(--mono)">ADMIN</span>'
-          : '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(79,142,247,0.15);color:var(--accent);font-family:var(--mono)">JUNIOR</span>';
+          : '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(45,50,112,0.15);color:var(--accent);font-family:var(--mono)">JUNIOR</span>';
         html += `
           <tr style="border-bottom:1px solid var(--border)">
             <td style="padding:12px 14px;color:var(--text);font-weight:600">${u.name}</td>
