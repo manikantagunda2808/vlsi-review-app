@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VLSI Review — Senior</title>
+  <title>VLSI Review — Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -155,7 +155,7 @@
   <div class="navbar-brand">
     <img src="Vaaluka Logo.png" style="height:26px;vertical-align:middle" alt="">
     <span class="logo">VLSI</span>
-    <span class="role-pill">SENIOR</span>
+    <span class="role-pill">ADMIN</span>
   </div>
   <div class="navbar-right">
     <span class="user-name" id="welcomeMsg"></span>
@@ -701,7 +701,7 @@
             <tbody>`;
       users.forEach(u => {
         const rolePill = u.role === "senior"
-          ? '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(245,166,35,0.15);color:var(--warn);font-family:var(--mono)">SENIOR</span>'
+          ? '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(245,166,35,0.15);color:var(--warn);font-family:var(--mono)">ADMIN</span>'
           : '<span style="font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(79,142,247,0.15);color:var(--accent);font-family:var(--mono)">JUNIOR</span>';
         html += `
           <tr style="border-bottom:1px solid var(--border)">
@@ -709,7 +709,7 @@
             <td style="padding:12px 14px;color:var(--muted);font-family:var(--mono);font-size:12px">${u.email}</td>
             <td style="padding:12px 14px">${rolePill}</td>
             <td style="padding:12px 14px">
-              <button class="btn-danger" onclick="deleteUser('${u.user_id}','${u.name}')" ${u.role === "senior" ? "disabled title='Cannot delete seniors'" : ""}>Delete</button>
+              <button class="btn-danger" onclick="deleteUser('${u.user_id}','${u.name}')" ${u.role === "senior" ? "disabled title='Cannot delete admins'" : ""}>Delete</button>
             </td>
           </tr>`;
       });
