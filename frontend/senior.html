@@ -7,10 +7,10 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #080b12; --surface: #0f1520; --surface2: #161d2e;
-      --border: #1e2a40; --accent: #4f8ef7; --accent2: #7c4dff;
-      --success: #00c896; --warn: #f5a623; --danger: #ff4d6d;
-      --text: #e2e8f0; --muted: #5a6a85;
+      --bg: #f4f6f9; --surface: #ffffff; --surface2: #eef1f5;
+      --border: #d1d5db; --accent: #4f8ef7; --accent2: #7c4dff;
+      --success: #16a34a; --warn: #d97706; --danger: #dc2626;
+      --text: #1f2937; --muted: #6b7280;
       --mono: 'JetBrains Mono', monospace; --sans: 'Syne', sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -136,7 +136,7 @@
     .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 1rem; }
     .chat-msg { max-width: 75%; padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.7; }
     .chat-msg.user { background: var(--accent2); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-    .chat-msg.assistant { background: var(--surface); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+    .chat-msg.assistant { background: var(--surface2); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
     .chat-input-row { display: flex; gap: 10px; padding-top: 1rem; border-top: 1px solid var(--border); }
     .chat-input-row input {
       flex: 1; background: var(--surface); border: 1px solid var(--border);
@@ -146,7 +146,7 @@
     .chat-input-row input:focus { border-color: var(--accent); }
     .chat-send { padding: 12px 22px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
     code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); font-size: 12px; color: #9c8fff; }
-    pre { background: var(--surface2); padding: 12px; border-radius: 8px; font-family: var(--mono); font-size: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--border); color: #a8d8a8; }
+    pre { background: var(--surface2); padding: 12px; border-radius: 8px; font-family: var(--mono); font-size: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--border); color: var(--text); }
   </style>
 </head>
 <body>
