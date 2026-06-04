@@ -44,7 +44,7 @@ def send_otp_email(to_email: str, otp: str):
         content_type="textContent",
     )
 
-def send_review_report(from_email: str, to_emails: list, user_name: str, result: dict):
+def send_review_report(from_email: str, to_emails: list, user_name: str, result: dict, repo_url: str = ""):
     score = result.get("score", 0)
     violations = result.get("violations", [])
     warnings = result.get("warnings", [])
@@ -80,6 +80,16 @@ def send_review_report(from_email: str, to_emails: list, user_name: str, result:
 <table cellpadding="0" cellspacing="0" width="100%">
 <tr><td style="font-size:12px;color:#7a7f9a;padding:6px 0">Summary</td></tr>
 <tr><td style="font-size:13px;color:#e0e0e0;line-height:1.6;background:#0f1117;border:1px solid #2e3148;border-radius:8px;padding:12px">{summary}</td></tr>
+</table>
+</td></tr>"""
+
+    if repo_url:
+        html += f"""<tr><td style="padding:0 20px">
+<table cellpadding="0" cellspacing="0" width="100%">
+<tr><td style="font-size:12px;color:#7a7f9a;padding:6px 0">Repository</td></tr>
+<tr><td style="font-size:13px;color:#e0e0e0;line-height:1.6;background:#0f1117;border:1px solid #2e3148;border-radius:8px;padding:12px;word-break:break-all">
+<a href="{repo_url}" style="color:#4f8ef7;text-decoration:none">{repo_url}</a>
+</td></tr>
 </table>
 </td></tr>"""
 

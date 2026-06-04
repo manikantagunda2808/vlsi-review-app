@@ -148,7 +148,8 @@ def email_report(req: EmailReportRequest, authorization: str = Header(...)):
             from_email=sender_email,
             to_emails=req.recipients,
             user_name=req.user_name,
-            result=req.review_result
+            result=req.review_result,
+            repo_url=req.repo_url
         )
         return {"message": "Report emailed successfully"}
     except HTTPException:
@@ -161,6 +162,7 @@ class EmailReportRequest(BaseModel):
     recipients: list[str]
     review_result: dict
     user_name: str
+    repo_url: str = ""
 
 class PasteReviewRequest(BaseModel):
     review_type: str

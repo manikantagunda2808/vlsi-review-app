@@ -273,6 +273,11 @@
       <input type="text" id="recipientInput" placeholder="Type email and press Enter" style="border:none;background:transparent;color:var(--text);font-size:13px;outline:none;padding:4px 2px;min-width:200px;flex:1;width:100%">
     </div>
 
+    <label style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+      Repo URL
+    </label>
+    <input type="url" id="repoUrl" placeholder="https://github.com/username/repo or OneDrive link" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;margin-bottom:1.2rem">
+
     <div id="emailStatus" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:1rem;font-size:13px;font-weight:500"></div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1rem">
@@ -462,6 +467,7 @@
   function openEmailModal() {
     document.getElementById("recipientTags").innerHTML = "";
     document.getElementById("recipientInput").value = "";
+    document.getElementById("repoUrl").value = "";
     document.getElementById("emailStatus").style.display = "none";
     document.getElementById("sendEmailBtn").disabled = false;
     document.getElementById("sendEmailBtn").textContent = "Send Report";
@@ -484,7 +490,7 @@
     const res = await fetch(`${API}/review/email-report`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ recipients, review_result: reviewToEmail, user_name: name })
+      body: JSON.stringify({ recipients, review_result: reviewToEmail, user_name: name, repo_url: document.getElementById("repoUrl").value.trim() })
     });
 
     const status = document.getElementById("emailStatus");
