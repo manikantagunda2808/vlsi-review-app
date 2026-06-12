@@ -330,25 +330,85 @@
 <!-- Create Assignment Modal -->
 <div class="modal-overlay" id="createModal">
   <div class="modal">
-    <h3>Create New Assignment</h3>
+    <h3 id="modalTitle">Create New Assignment</h3>
     <label>Assignment Name</label>
     <input type="text" id="aName" placeholder="e.g. Serial Adder — SIPO/PISO">
     <label>Description</label>
     <textarea id="aDesc" style="min-height:60px" placeholder="Brief description..."></textarea>
     <div class="section-title">RTL Specific Rules</div>
     <div id="aRtlRules"></div>
-    <button class="btn-secondary" onclick="addAssignmentRule('rtl')">+ Add RTL Rule</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="addAssignmentRule('rtl')">+ Add RTL Rule</button>
+      <button class="btn-secondary" onclick="toggleAssignmentBulk('rtl')" id="bulkARtlToggle">+ Bulk Add RTL Rules</button>
+    </div>
+    <div id="bulkARtlSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+      <label>Paste rules (one per line)</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
+        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | RTL must have synchronous reset</code>
+      </div>
+      <textarea id="bulkARtlText" style="min-height:100px" placeholder="violation | RTL must have synchronous reset&#10;warning | Avoid latches in combinational logic"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="previewAssignmentBulkRules('rtl')">Preview</button>
+        <button class="btn-secondary" onclick="clearAssignmentBulk('rtl')">Clear</button>
+      </div>
+      <div id="bulkARtlPreview" style="margin-top:8px;display:none"></div>
+    </div>
     <div class="section-title" style="margin-top:1rem">SV Specific Rules</div>
     <div id="aSvRules"></div>
-    <button class="btn-secondary" onclick="addAssignmentRule('sv')">+ Add SV Rule</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="addAssignmentRule('sv')">+ Add SV Rule</button>
+      <button class="btn-secondary" onclick="toggleAssignmentBulk('sv')" id="bulkASvToggle">+ Bulk Add SV Rules</button>
+    </div>
+    <div id="bulkASvSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+      <label>Paste rules (one per line)</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
+        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | Use always_ff for sequential logic</code>
+      </div>
+      <textarea id="bulkASvText" style="min-height:100px" placeholder="violation | Use always_ff for sequential logic&#10;warning | Avoid $display in synthesizable code"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="previewAssignmentBulkRules('sv')">Preview</button>
+        <button class="btn-secondary" onclick="clearAssignmentBulk('sv')">Clear</button>
+      </div>
+      <div id="bulkASvPreview" style="margin-top:8px;display:none"></div>
+    </div>
     <div class="section-title" style="margin-top:1rem">Verilog TB Specific Rules</div>
     <div id="aVerilogTbRules"></div>
-    <button class="btn-secondary" onclick="addAssignmentRule('verilog_tb')">+ Add Verilog TB Rule</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="addAssignmentRule('verilog_tb')">+ Add Verilog TB Rule</button>
+      <button class="btn-secondary" onclick="toggleAssignmentBulk('verilog_tb')" id="bulkAVerilogTbToggle">+ Bulk Add TB Rules</button>
+    </div>
+    <div id="bulkAVerilogTbSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+      <label>Paste rules (one per line)</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
+        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | Testbench must have assertion checking</code>
+      </div>
+      <textarea id="bulkAVerilogTbText" style="min-height:100px" placeholder="violation | Testbench must have assertion checking&#10;warning | Use $random for constrained random values"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="previewAssignmentBulkRules('verilog_tb')">Preview</button>
+        <button class="btn-secondary" onclick="clearAssignmentBulk('verilog_tb')">Clear</button>
+      </div>
+      <div id="bulkAVerilogTbPreview" style="margin-top:8px;display:none"></div>
+    </div>
     <div class="section-title" style="margin-top:1rem">UVM Specific Rules</div>
     <div id="aUvmRules"></div>
-    <button class="btn-secondary" onclick="addAssignmentRule('uvm')">+ Add UVM Rule</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="addAssignmentRule('uvm')">+ Add UVM Rule</button>
+      <button class="btn-secondary" onclick="toggleAssignmentBulk('uvm')" id="bulkAUvmToggle">+ Bulk Add UVM Rules</button>
+    </div>
+    <div id="bulkAUvmSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+      <label>Paste rules (one per line)</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
+        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | All sequences must extend uvm_sequence</code>
+      </div>
+      <textarea id="bulkAUvmText" style="min-height:100px" placeholder="violation | All sequences must extend uvm_sequence&#10;warning | Use `uvm_info instead of $display"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="previewAssignmentBulkRules('uvm')">Preview</button>
+        <button class="btn-secondary" onclick="clearAssignmentBulk('uvm')">Clear</button>
+      </div>
+      <div id="bulkAUvmPreview" style="margin-top:8px;display:none"></div>
+    </div>
     <div class="modal-footer">
-      <button class="btn-primary" onclick="saveAssignment()">Create Assignment</button>
+      <button class="btn-primary" onclick="saveAssignment()" id="saveBtn">Create Assignment</button>
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
     </div>
   </div>
@@ -364,6 +424,7 @@
 
   let allReviews = [];
   let assignmentRules = { rtl: [], sv: [], uvm: [], verilog_tb: [] };
+  let assignmentEditId = null;
   let chatHistory = [];
 
   function logout() { localStorage.clear(); window.location.href = "/"; }
@@ -545,7 +606,10 @@
           <div class="assignment-card">
             <div class="top">
               <span class="aname">${a.name}</span>
-              <button class="btn-danger" onclick="deleteAssignment('${a.id}')">Delete</button>
+              <div style="display:flex;gap:6px">
+                <button class="btn-secondary" onclick="editAssignment('${a.id}')" style="margin:0">Edit</button>
+                <button class="btn-danger" onclick="deleteAssignment('${a.id}')">Delete</button>
+              </div>
             </div>
             <div class="adesc">${a.description || "No description"}</div>
             <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">
@@ -563,11 +627,75 @@
     loadAssignments();
   }
 
+  async function editAssignment(id) {
+    const res = await fetch(`${API}/assignments/`, { headers: { "Authorization": `Bearer ${token}` } });
+    if (!res.ok) return alert("Failed to load assignments");
+    const all = await res.json();
+    const a = all.find(x => x.id === id);
+    if (!a) return alert("Assignment not found");
+
+    assignmentEditId = id;
+    assignmentRules = {
+      rtl: JSON.parse(JSON.stringify(a.rtl_rules || [])),
+      sv: JSON.parse(JSON.stringify(a.sv_rules || [])),
+      uvm: JSON.parse(JSON.stringify(a.uvm_rules || [])),
+      verilog_tb: JSON.parse(JSON.stringify(a.verilog_tb_rules || []))
+    };
+    document.getElementById("aName").value = a.name || "";
+    document.getElementById("aDesc").value = a.description || "";
+    document.getElementById("modalTitle").textContent = "Edit Assignment";
+    document.getElementById("saveBtn").textContent = "Save Changes";
+
+    const types = ["rtl", "sv", "uvm", "verilog_tb"];
+    types.forEach(t => {
+      const camelId = _assignmentBulkTypeId(t);
+      const container = document.getElementById(`a${camelId}Rules`);
+      container.innerHTML = "";
+      const rules = assignmentRules[t];
+      rules.forEach((r, idx) => {
+        const div = document.createElement("div");
+        div.style.cssText = "display:flex;gap:8px;margin-bottom:8px;align-items:flex-start";
+        div.innerHTML = `
+          <input type="text" value="${r.id || ""}" style="width:120px;margin-bottom:0" onchange="assignmentRules['${t}'][${idx}].id=this.value">
+          <select style="width:110px;margin-bottom:0" onchange="assignmentRules['${t}'][${idx}].severity=this.value">
+            <option value="violation" ${r.severity === "violation" ? "selected" : ""}>Violation</option>
+            <option value="warning" ${r.severity === "warning" ? "selected" : ""}>Warning</option>
+          </select>
+          <input type="text" value="${(r.rule || "").replace(/"/g, "&quot;")}" style="flex:1;margin-bottom:0" onchange="assignmentRules['${t}'][${idx}].rule=this.value">`;
+        container.appendChild(div);
+      });
+      const section = document.getElementById(`bulkA${camelId}Section`);
+      const toggle = document.getElementById(`bulkA${camelId}Toggle`);
+      if (section) section.style.display = "none";
+      if (toggle) toggle.textContent = `+ Bulk Add ${_assignmentDisplayName(t)} Rules`;
+      const preview = document.getElementById(`bulkA${camelId}Preview`);
+      if (preview) { preview.style.display = "none"; preview._parsedValid = null; }
+      const textarea = document.getElementById(`bulkA${camelId}Text`);
+      if (textarea) textarea.value = "";
+    });
+    document.getElementById("createModal").classList.add("open");
+  }
+
   function openCreateModal() {
+    assignmentEditId = null;
     assignmentRules = { rtl: [], sv: [], uvm: [], verilog_tb: [] };
     document.getElementById("aName").value = "";
     document.getElementById("aDesc").value = "";
-    ["Rtl", "Sv", "Uvm", "VerilogTb"].forEach(t => document.getElementById(`a${t}Rules`).innerHTML = "");
+    document.getElementById("modalTitle").textContent = "Create New Assignment";
+    document.getElementById("saveBtn").textContent = "Create Assignment";
+    const types = ["rtl", "sv", "uvm", "verilog_tb"];
+    types.forEach(t => {
+      const id = _assignmentBulkTypeId(t);
+      document.getElementById(`a${id}Rules`).innerHTML = "";
+      const section = document.getElementById(`bulkA${id}Section`);
+      const toggle = document.getElementById(`bulkA${id}Toggle`);
+      if (section) section.style.display = "none";
+      if (toggle) toggle.textContent = `+ Bulk Add ${_assignmentDisplayName(t)} Rules`;
+      const preview = document.getElementById(`bulkA${id}Preview`);
+      if (preview) { preview.style.display = "none"; preview._parsedValid = null; }
+      const textarea = document.getElementById(`bulkA${id}Text`);
+      if (textarea) textarea.value = "";
+    });
     document.getElementById("createModal").classList.add("open");
   }
 
@@ -590,23 +718,189 @@
     container.appendChild(div);
   }
 
+  // Assignment Bulk Rules
+  function _assignmentPrefix(type) {
+    const m = { rtl: "RTL_A", sv: "SV_A", uvm: "UVM_A", verilog_tb: "TB_A" };
+    return m[type] || type.toUpperCase() + "_A";
+  }
+
+  function _assignmentBulkTypeId(type) {
+    const m = { rtl: "Rtl", sv: "Sv", uvm: "Uvm", verilog_tb: "VerilogTb" };
+    return m[type] || type;
+  }
+
+  function _assignmentMaxNum(type) {
+    const prefix = _assignmentPrefix(type);
+    let max = 0;
+    for (const r of assignmentRules[type]) {
+      const rid = r.id || "";
+      if (rid.startsWith(prefix)) {
+        const n = parseInt(rid.slice(prefix.length), 10);
+        if (!isNaN(n) && n > max) max = n;
+      }
+    }
+    return max;
+  }
+
+  function _assignmentDisplayName(type) {
+    const m = { rtl: "RTL", sv: "SV", uvm: "UVM", verilog_tb: "Verilog TB" };
+    return m[type] || type.toUpperCase();
+  }
+
+  function toggleAssignmentBulk(type) {
+    const id = _assignmentBulkTypeId(type);
+    const section = document.getElementById(`bulkA${id}Section`);
+    const toggle = document.getElementById(`bulkA${id}Toggle`);
+    const isOpen = section.style.display !== "none";
+    section.style.display = isOpen ? "none" : "block";
+    toggle.textContent = isOpen ? `+ Bulk Add ${_assignmentDisplayName(type)} Rules` : `- Collapse Bulk`;
+  }
+
+  function clearAssignmentBulk(type) {
+    const id = _assignmentBulkTypeId(type);
+    document.getElementById(`bulkA${id}Text`).value = "";
+    document.getElementById(`bulkA${id}Preview`).style.display = "none";
+  }
+
+  function previewAssignmentBulkRules(type) {
+    const id = _assignmentBulkTypeId(type);
+    const text = document.getElementById(`bulkA${id}Text`).value.trim();
+    if (!text) return alert("Paste at least one rule.");
+
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+    const parsed = [];
+    for (const line of lines) {
+      const idx = line.indexOf("|");
+      if (idx === -1) {
+        parsed.push({ error: true, line, reason: "Missing '|' separator" });
+        continue;
+      }
+      const severity = line.slice(0, idx).trim().toLowerCase();
+      const rule = line.slice(idx + 1).trim();
+      if (severity !== "violation" && severity !== "warning") {
+        parsed.push({ error: true, line, reason: `Invalid severity '${severity}'` });
+        continue;
+      }
+      if (!rule) {
+        parsed.push({ error: true, line, reason: "Rule text is empty" });
+        continue;
+      }
+      parsed.push({ error: false, severity, rule, line });
+    }
+
+    const valid = parsed.filter(p => !p.error);
+    const invalid = parsed.filter(p => p.error);
+
+    if (!valid.length) {
+      document.getElementById(`bulkA${id}Preview`).innerHTML = `<div style="padding:12px;background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);border-radius:8px;color:var(--danger);font-size:13px">No valid rules found. Fix errors and try again.</div>`;
+      document.getElementById(`bulkA${id}Preview`).style.display = "block";
+      return;
+    }
+
+    const prefix = _assignmentPrefix(type);
+    let nextNum = _assignmentMaxNum(type) + 1;
+
+    let html = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
+            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">#</th>
+            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">Severity</th>
+            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">Rule</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    const displayRules = valid.map(p => {
+      const rid = `${prefix}${String(nextNum).padStart(2, "0")}`;
+      nextNum++;
+      return { ...p, id: rid };
+    });
+
+    displayRules.forEach((r, i) => {
+      const sevColor = r.severity === "violation" ? "var(--danger)" : "var(--warn)";
+      html += `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 12px;font-family:var(--mono);font-size:11px;color:var(--accent)">${r.id}</td>
+        <td style="padding:10px 12px;font-family:var(--mono);font-size:11px;color:${sevColor}">${r.severity}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--text)">${r.rule}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+
+    if (invalid.length) {
+      html += `<div style="padding:10px 14px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:8px;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--danger);font-family:var(--mono);font-weight:600;margin-bottom:6px">${invalid.length} line(s) with errors (will be skipped):</div>`;
+      invalid.forEach(p => {
+        html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)">→ <span style="color:var(--danger)">${p.reason}</span>: ${p.line}</div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `<div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-primary" onclick="importAssignmentBulkRules('${type}')">Import ${displayRules.length} Rule${displayRules.length > 1 ? "s" : ""}</button>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">IDs will be auto-assigned</span>
+    </div>
+    <div id="bulkA${id}Status" style="margin-top:8px"></div>`;
+
+    const previewDiv = document.getElementById(`bulkA${id}Preview`);
+    previewDiv.innerHTML = html;
+    previewDiv.style.display = "block";
+    previewDiv._parsedValid = displayRules;
+  }
+
+  function importAssignmentBulkRules(type) {
+    const id = _assignmentBulkTypeId(type);
+    const previewDiv = document.getElementById(`bulkA${id}Preview`);
+    const valid = previewDiv._parsedValid;
+    if (!valid || !valid.length) return;
+
+    const startIdx = assignmentRules[type].length;
+    for (const r of valid) {
+      assignmentRules[type].push({ id: r.id, severity: r.severity, rule: r.rule });
+    }
+
+    const container = document.getElementById(`a${id}Rules`);
+    valid.forEach((r, i) => {
+      const idx = startIdx + i;
+      const div = document.createElement("div");
+      div.style.cssText = "display:flex;gap:8px;margin-bottom:8px;align-items:flex-start";
+      div.innerHTML = `
+        <input type="text" value="${r.id}" style="width:120px;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].id=this.value">
+        <select style="width:110px;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].severity=this.value">
+          <option value="violation" ${r.severity === "violation" ? "selected" : ""}>Violation</option>
+          <option value="warning" ${r.severity === "warning" ? "selected" : ""}>Warning</option>
+        </select>
+        <input type="text" value="${r.rule.replace(/"/g, "&quot;")}" style="flex:1;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].rule=this.value">`;
+      container.appendChild(div);
+    });
+
+    const statusDiv = document.getElementById(`bulkA${id}Status`);
+    statusDiv.innerHTML = `<span style="color:var(--success);font-weight:600">✅ Imported ${valid.length} rule${valid.length > 1 ? "s" : ""}</span>`;
+    document.getElementById(`bulkA${id}Text`).value = "";
+    setTimeout(() => { previewDiv.style.display = "none"; }, 2000);
+  }
+
   async function saveAssignment() {
     const aName = document.getElementById("aName").value.trim();
     const desc = document.getElementById("aDesc").value.trim();
     if (!aName) return alert("Assignment name is required.");
-    const res = await fetch(`${API}/assignments/`, {
-      method: "POST",
+    const body = {
+      name: aName, description: desc,
+      rtl_rules: assignmentRules.rtl.filter(r => r.id && r.rule),
+      sv_rules: assignmentRules.sv.filter(r => r.id && r.rule),
+      uvm_rules: assignmentRules.uvm.filter(r => r.id && r.rule),
+      verilog_tb_rules: assignmentRules.verilog_tb.filter(r => r.id && r.rule)
+    };
+    const isEdit = assignmentEditId !== null;
+    const url = isEdit ? `${API}/assignments/${assignmentEditId}` : `${API}/assignments/`;
+    const res = await fetch(url, {
+      method: isEdit ? "PUT" : "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({
-        name: aName, description: desc,
-        rtl_rules: assignmentRules.rtl.filter(r => r.id && r.rule),
-        sv_rules: assignmentRules.sv.filter(r => r.id && r.rule),
-        uvm_rules: assignmentRules.uvm.filter(r => r.id && r.rule),
-        verilog_tb_rules: assignmentRules.verilog_tb.filter(r => r.id && r.rule)
-      })
+      body: JSON.stringify(body)
     });
     if (res.ok) { closeModal(); loadAssignments(); }
-    else alert("Failed to create assignment.");
+    else alert(isEdit ? "Failed to update assignment." : "Failed to create assignment.");
   }
 
   // Global Rules
