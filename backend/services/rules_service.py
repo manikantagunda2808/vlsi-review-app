@@ -75,6 +75,58 @@ def save_rules(review_type: str, data: dict):
     _save_to_supabase(review_type, data)
 
 
+def _get_prefix(review_type: str) -> str:
+    prefix_map = {
+        "rtl": "RTL",
+        "sv": "SV",
+        "uvm": "UVM",
+        "verilog_tb": "TB",
+    }
+    return prefix_map.get(review_type, review_type.upper())
+
+
+def _max_rule_number(existing_rules: list, prefix: str) -> int:
+    max_num = 0
+    for r in existing_rules:
+        rid = r.get("id", "")
+        if rid.startswith(prefix):
+            try:
+                num = int(rid[len(prefix):])
+                if num > max_num:
+                    max_num = num
+            except ValueError:
+                pass
+    return max_num
+
+
+def bulk_add_rules(review_type: str, new_rules_data: list) -> dict:
+    prefix = _get_prefix(review_type)
+    data = load_raw_rules(review_type)
+    existing = data["rules"]
+
+    next_num = _max_rule_number(existing, prefix) + 1
+
+    imported = []
+    errors = []
+    for i, item in enumerate(new_rules_data):
+        severity = item.get("severity")
+        rule = item.get("rule", "").strip()
+        if severity not in ("violation", "warning"):
+            errors.append({"index": i, "reason": f"Invalid severity '{severity}'. Must be 'violation' or 'warning'."})
+            continue
+        if not rule:
+            errors.append({"index": i, "reason": "Rule text cannot be empty."})
+            continue
+        rule_id = f"{prefix}{next_num:03d}"
+        next_num += 1
+        imported.append({"id": rule_id, "severity": severity, "rule": rule})
+
+    data["rules"] = existing + imported
+    save_rules(review_type, data)
+
+    return {"imported": imported, "errors": errors}
+
+
 def update_rule_severity(review_type: str, rule_id: str, new_severity: str) -> bool:
     data = load_raw_rules(review_type)
     for rule in data["rules"]:

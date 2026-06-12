@@ -1,6 +1,6 @@
 import sys
 from fastapi import APIRouter, HTTPException, Header
-from backend.services.rules_service import load_raw_rules, save_rules, update_rule_severity, delete_rule as delete_rule_from_file
+from backend.services.rules_service import load_raw_rules, save_rules, update_rule_severity, delete_rule as delete_rule_from_file, bulk_add_rules
 from backend.services.supabase_service import get_service_client
 from backend.services.auth_utils import verify_token
 
@@ -35,6 +35,32 @@ def update_rules(review_type: str, data: dict, authorization: str = Header(...))
     except Exception as e:
         print(f"[rules] PUT error: {e}", file=sys.stderr)
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/{review_type}/bulk")
+def bulk_add_rules_endpoint(review_type: str, body: dict, authorization: str = Header(...)):
+    try:
+        svc = get_service_client()
+        payload = verify_token(authorization)
+        profile = svc.table("profiles").select("*").eq("id", payload["user_id"]).single().execute()
+        if profile.data["role"] != "senior":
+            raise HTTPException(status_code=403, detail="Only seniors can add bulk rules")
+
+        new_rules = body.get("rules", [])
+        if not new_rules or not isinstance(new_rules, list):
+            raise HTTPException(status_code=400, detail="Request body must contain a 'rules' array")
+
+        result = bulk_add_rules(review_type, new_rules)
+        imported_count = len(result["imported"])
+        errors_count = len(result["errors"])
+        print(f"[rules] Bulk added {imported_count} rules to {review_type} by {payload['user_id']} ({errors_count} errors)", file=sys.stderr)
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[rules] POST bulk error: {e}", file=sys.stderr)
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.patch("/{review_type}/{rule_id}")
 def patch_rule(review_type: str, rule_id: str, body: dict, authorization: str = Header(...)):
