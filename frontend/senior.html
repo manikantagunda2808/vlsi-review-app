@@ -230,22 +230,7 @@
     </div>
 
     <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem">
-      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Bulk Add Rules</span>
-        <button class="btn-secondary" onclick="toggleBulkSection()" id="bulkToggleBtn">+ Expand</button>
-      </div>
-      <div id="bulkSection" style="display:none">
-        <label style="margin-top:8px">Paste rules (one per line)</label>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
-          Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | No incomplete sensitivity lists</code>
-        </div>
-        <textarea id="bulkRulesText" style="min-height:150px" placeholder="violation | No incomplete sensitivity lists in always_comb&#10;warning | Avoid using $display in synthesizable code&#10;violation | All registers must have a synchronous reset"></textarea>
-        <div style="display:flex;gap:8px">
-          <button class="btn-primary" onclick="previewBulkRules()">Preview</button>
-          <button class="btn-secondary" onclick="clearBulkRules()">Clear</button>
-        </div>
-        <div id="bulkPreview" style="margin-top:1rem;display:none"></div>
-      </div>
+      <button class="btn-primary" onclick="openBulkModal('global')" style="width:100%">Bulk Import Rules</button>
     </div>
   </div>
 </div>
@@ -339,77 +324,50 @@
     <div id="aRtlRules"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="addAssignmentRule('rtl')">+ Add RTL Rule</button>
-      <button class="btn-secondary" onclick="toggleAssignmentBulk('rtl')" id="bulkARtlToggle">+ Bulk Add RTL Rules</button>
-    </div>
-    <div id="bulkARtlSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
-      <label>Paste rules (one per line)</label>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
-        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | RTL must have synchronous reset</code>
-      </div>
-      <textarea id="bulkARtlText" style="min-height:100px" placeholder="violation | RTL must have synchronous reset&#10;warning | Avoid latches in combinational logic"></textarea>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" onclick="previewAssignmentBulkRules('rtl')">Preview</button>
-        <button class="btn-secondary" onclick="clearAssignmentBulk('rtl')">Clear</button>
-      </div>
-      <div id="bulkARtlPreview" style="margin-top:8px;display:none"></div>
+      <button class="btn-secondary" onclick="openBulkModal('assignment','rtl')">Bulk Import</button>
     </div>
     <div class="section-title" style="margin-top:1rem">SV Specific Rules</div>
     <div id="aSvRules"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="addAssignmentRule('sv')">+ Add SV Rule</button>
-      <button class="btn-secondary" onclick="toggleAssignmentBulk('sv')" id="bulkASvToggle">+ Bulk Add SV Rules</button>
-    </div>
-    <div id="bulkASvSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
-      <label>Paste rules (one per line)</label>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
-        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | Use always_ff for sequential logic</code>
-      </div>
-      <textarea id="bulkASvText" style="min-height:100px" placeholder="violation | Use always_ff for sequential logic&#10;warning | Avoid $display in synthesizable code"></textarea>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" onclick="previewAssignmentBulkRules('sv')">Preview</button>
-        <button class="btn-secondary" onclick="clearAssignmentBulk('sv')">Clear</button>
-      </div>
-      <div id="bulkASvPreview" style="margin-top:8px;display:none"></div>
+      <button class="btn-secondary" onclick="openBulkModal('assignment','sv')">Bulk Import</button>
     </div>
     <div class="section-title" style="margin-top:1rem">Verilog TB Specific Rules</div>
     <div id="aVerilogTbRules"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="addAssignmentRule('verilog_tb')">+ Add Verilog TB Rule</button>
-      <button class="btn-secondary" onclick="toggleAssignmentBulk('verilog_tb')" id="bulkAVerilogTbToggle">+ Bulk Add TB Rules</button>
-    </div>
-    <div id="bulkAVerilogTbSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
-      <label>Paste rules (one per line)</label>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
-        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | Testbench must have assertion checking</code>
-      </div>
-      <textarea id="bulkAVerilogTbText" style="min-height:100px" placeholder="violation | Testbench must have assertion checking&#10;warning | Use $random for constrained random values"></textarea>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" onclick="previewAssignmentBulkRules('verilog_tb')">Preview</button>
-        <button class="btn-secondary" onclick="clearAssignmentBulk('verilog_tb')">Clear</button>
-      </div>
-      <div id="bulkAVerilogTbPreview" style="margin-top:8px;display:none"></div>
+      <button class="btn-secondary" onclick="openBulkModal('assignment','verilog_tb')">Bulk Import</button>
     </div>
     <div class="section-title" style="margin-top:1rem">UVM Specific Rules</div>
     <div id="aUvmRules"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-secondary" onclick="addAssignmentRule('uvm')">+ Add UVM Rule</button>
-      <button class="btn-secondary" onclick="toggleAssignmentBulk('uvm')" id="bulkAUvmToggle">+ Bulk Add UVM Rules</button>
-    </div>
-    <div id="bulkAUvmSection" style="display:none;margin:8px 0 12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
-      <label>Paste rules (one per line)</label>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
-        Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | All sequences must extend uvm_sequence</code>
-      </div>
-      <textarea id="bulkAUvmText" style="min-height:100px" placeholder="violation | All sequences must extend uvm_sequence&#10;warning | Use `uvm_info instead of $display"></textarea>
-      <div style="display:flex;gap:8px">
-        <button class="btn-primary" onclick="previewAssignmentBulkRules('uvm')">Preview</button>
-        <button class="btn-secondary" onclick="clearAssignmentBulk('uvm')">Clear</button>
-      </div>
-      <div id="bulkAUvmPreview" style="margin-top:8px;display:none"></div>
+      <button class="btn-secondary" onclick="openBulkModal('assignment','uvm')">Bulk Import</button>
     </div>
     <div class="modal-footer">
       <button class="btn-primary" onclick="saveAssignment()" id="saveBtn">Create Assignment</button>
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div class="modal-overlay" id="bulkModal">
+  <div class="modal" style="width:560px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 id="bulkModalTitle" style="font-size:15px;margin:0">Bulk Import Rules</h3>
+      <button onclick="closeBulkModal()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px;line-height:1">&times;</button>
+    </div>
+    <label>Paste rules (one per line)</label>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">
+      Format: <code>severity | rule text</code> &mdash; e.g. <code>violation | No incomplete sensitivity lists</code>
+    </div>
+    <textarea id="bulkModalText" style="min-height:160px" oninput="onBulkInput()" placeholder="violation | No incomplete sensitivity lists in always_comb&#10;warning | Avoid using $display in synthesizable code"></textarea>
+    <div id="bulkModalPreview" style="max-height:240px;overflow-y:auto;margin-bottom:12px"></div>
+    <div id="bulkModalStatus" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;font-weight:500"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1rem">
+      <button onclick="closeBulkModal()" style="padding:10px 20px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button class="btn-primary" id="bulkImportBtn" onclick="executeBulkImport()" disabled>Import 0 Rules</button>
     </div>
   </div>
 </div>
@@ -664,14 +622,6 @@
           <input type="text" value="${(r.rule || "").replace(/"/g, "&quot;")}" style="flex:1;margin-bottom:0" onchange="assignmentRules['${t}'][${idx}].rule=this.value">`;
         container.appendChild(div);
       });
-      const section = document.getElementById(`bulkA${camelId}Section`);
-      const toggle = document.getElementById(`bulkA${camelId}Toggle`);
-      if (section) section.style.display = "none";
-      if (toggle) toggle.textContent = `+ Bulk Add ${_assignmentDisplayName(t)} Rules`;
-      const preview = document.getElementById(`bulkA${camelId}Preview`);
-      if (preview) { preview.style.display = "none"; preview._parsedValid = null; }
-      const textarea = document.getElementById(`bulkA${camelId}Text`);
-      if (textarea) textarea.value = "";
     });
     document.getElementById("createModal").classList.add("open");
   }
@@ -683,18 +633,8 @@
     document.getElementById("aDesc").value = "";
     document.getElementById("modalTitle").textContent = "Create New Assignment";
     document.getElementById("saveBtn").textContent = "Create Assignment";
-    const types = ["rtl", "sv", "uvm", "verilog_tb"];
-    types.forEach(t => {
-      const id = _assignmentBulkTypeId(t);
-      document.getElementById(`a${id}Rules`).innerHTML = "";
-      const section = document.getElementById(`bulkA${id}Section`);
-      const toggle = document.getElementById(`bulkA${id}Toggle`);
-      if (section) section.style.display = "none";
-      if (toggle) toggle.textContent = `+ Bulk Add ${_assignmentDisplayName(t)} Rules`;
-      const preview = document.getElementById(`bulkA${id}Preview`);
-      if (preview) { preview.style.display = "none"; preview._parsedValid = null; }
-      const textarea = document.getElementById(`bulkA${id}Text`);
-      if (textarea) textarea.value = "";
+    ["rtl", "sv", "uvm", "verilog_tb"].forEach(t => {
+      document.getElementById(`a${_assignmentBulkTypeId(t)}Rules`).innerHTML = "";
     });
     document.getElementById("createModal").classList.add("open");
   }
@@ -718,21 +658,29 @@
     container.appendChild(div);
   }
 
-  // Assignment Bulk Rules
-  function _assignmentPrefix(type) {
-    const m = { rtl: "RTL_A", sv: "SV_A", uvm: "UVM_A", verilog_tb: "TB_A" };
-    return m[type] || type.toUpperCase() + "_A";
-  }
-
   function _assignmentBulkTypeId(type) {
     const m = { rtl: "Rtl", sv: "Sv", uvm: "Uvm", verilog_tb: "VerilogTb" };
     return m[type] || type;
   }
 
-  function _assignmentMaxNum(type) {
-    const prefix = _assignmentPrefix(type);
+  // Bulk Import Modal
+  let _bulkContext = null; // "global" or "assignment"
+  let _bulkType = null;   // rule type string
+
+  function _bulkPrefix(type) {
+    const m = { rtl: "RTL_A", sv: "SV_A", uvm: "UVM_A", verilog_tb: "TB_A" };
+    return m[type] || type.toUpperCase() + "_A";
+  }
+
+  function _bulkTypeId(type) {
+    const m = { rtl: "Rtl", sv: "Sv", uvm: "Uvm", verilog_tb: "VerilogTb" };
+    return m[type] || type;
+  }
+
+  function _bulkMaxNum(type) {
+    const prefix = _bulkPrefix(type);
     let max = 0;
-    for (const r of assignmentRules[type]) {
+    for (const r of (assignmentRules[type] || [])) {
       const rid = r.id || "";
       if (rid.startsWith(prefix)) {
         const n = parseInt(rid.slice(prefix.length), 10);
@@ -742,143 +690,154 @@
     return max;
   }
 
-  function _assignmentDisplayName(type) {
+  function _bulkDisplayName(type) {
     const m = { rtl: "RTL", sv: "SV", uvm: "UVM", verilog_tb: "Verilog TB" };
     return m[type] || type.toUpperCase();
   }
 
-  function toggleAssignmentBulk(type) {
-    const id = _assignmentBulkTypeId(type);
-    const section = document.getElementById(`bulkA${id}Section`);
-    const toggle = document.getElementById(`bulkA${id}Toggle`);
-    const isOpen = section.style.display !== "none";
-    section.style.display = isOpen ? "none" : "block";
-    toggle.textContent = isOpen ? `+ Bulk Add ${_assignmentDisplayName(type)} Rules` : `- Collapse Bulk`;
+  function openBulkModal(context, type) {
+    _bulkContext = context;
+    _bulkType = type || document.getElementById("ruleType").value;
+    document.getElementById("bulkModalTitle").textContent = `Bulk Import — ${_bulkDisplayName(_bulkType)} Rules`;
+    document.getElementById("bulkModalText").value = "";
+    document.getElementById("bulkModalPreview").innerHTML = "";
+    document.getElementById("bulkModalStatus").style.display = "none";
+    document.getElementById("bulkImportBtn").disabled = true;
+    document.getElementById("bulkImportBtn").textContent = "Import 0 Rules";
+    document.getElementById("bulkModal").classList.add("open");
   }
 
-  function clearAssignmentBulk(type) {
-    const id = _assignmentBulkTypeId(type);
-    document.getElementById(`bulkA${id}Text`).value = "";
-    document.getElementById(`bulkA${id}Preview`).style.display = "none";
+  function closeBulkModal() {
+    document.getElementById("bulkModal").classList.remove("open");
+    _bulkContext = null;
+    _bulkType = null;
   }
 
-  function previewAssignmentBulkRules(type) {
-    const id = _assignmentBulkTypeId(type);
-    const text = document.getElementById(`bulkA${id}Text`).value.trim();
-    if (!text) return alert("Paste at least one rule.");
-
+  function onBulkInput() {
+    const text = document.getElementById("bulkModalText").value;
     const lines = text.split("\n").map(l => l.trim()).filter(l => l);
     const parsed = [];
     for (const line of lines) {
       const idx = line.indexOf("|");
-      if (idx === -1) {
-        parsed.push({ error: true, line, reason: "Missing '|' separator" });
-        continue;
-      }
+      if (idx === -1) { parsed.push({ error: true, line, reason: "Missing '|'" }); continue; }
       const severity = line.slice(0, idx).trim().toLowerCase();
       const rule = line.slice(idx + 1).trim();
-      if (severity !== "violation" && severity !== "warning") {
-        parsed.push({ error: true, line, reason: `Invalid severity '${severity}'` });
-        continue;
-      }
-      if (!rule) {
-        parsed.push({ error: true, line, reason: "Rule text is empty" });
-        continue;
-      }
+      if (severity !== "violation" && severity !== "warning") { parsed.push({ error: true, line, reason: `Invalid severity '${severity}'` }); continue; }
+      if (!rule) { parsed.push({ error: true, line, reason: "Rule text is empty" }); continue; }
       parsed.push({ error: false, severity, rule, line });
     }
-
     const valid = parsed.filter(p => !p.error);
     const invalid = parsed.filter(p => p.error);
 
-    if (!valid.length) {
-      document.getElementById(`bulkA${id}Preview`).innerHTML = `<div style="padding:12px;background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);border-radius:8px;color:var(--danger);font-size:13px">No valid rules found. Fix errors and try again.</div>`;
-      document.getElementById(`bulkA${id}Preview`).style.display = "block";
-      return;
-    }
+    const previewEl = document.getElementById("bulkModalPreview");
+    const importBtn = document.getElementById("bulkImportBtn");
 
-    const prefix = _assignmentPrefix(type);
-    let nextNum = _assignmentMaxNum(type) + 1;
+    if (!parsed.length) { previewEl.innerHTML = ""; importBtn.disabled = true; importBtn.textContent = "Import 0 Rules"; return; }
 
-    let html = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead>
-          <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
-            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">#</th>
-            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">Severity</th>
-            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">Rule</th>
-          </tr>
-        </thead>
-        <tbody>`;
+    const prefix = _bulkContext === "assignment" ? _bulkPrefix(_bulkType) : null;
+    let nextNum = _bulkContext === "assignment" ? _bulkMaxNum(_bulkType) + 1 : 0;
 
-    const displayRules = valid.map(p => {
-      const rid = `${prefix}${String(nextNum).padStart(2, "0")}`;
-      nextNum++;
-      return { ...p, id: rid };
+    let html = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:13px">`;
+    valid.forEach((p, i) => {
+      const rid = _bulkContext === "assignment" ? `${prefix}${String(nextNum++).padStart(2, "0")}` : `${_bulkDisplayName(_bulkType)}${String(i+1).padStart(3,"0")}*`;
+      const color = "color:var(--success)";
+      html += `<div style="display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);align-items:center">
+        <span style="font-family:var(--mono);font-size:10px;${color}">&#10003;</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--accent);width:80px">${rid}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:${p.severity === "violation" ? "var(--danger)" : "var(--warn)"};width:60px">${p.severity}</span>
+        <span style="font-size:11px;color:var(--text);flex:1">${p.rule}</span>
+      </div>`;
     });
-
-    displayRules.forEach((r, i) => {
-      const sevColor = r.severity === "violation" ? "var(--danger)" : "var(--warn)";
-      html += `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:10px 12px;font-family:var(--mono);font-size:11px;color:var(--accent)">${r.id}</td>
-        <td style="padding:10px 12px;font-family:var(--mono);font-size:11px;color:${sevColor}">${r.severity}</td>
-        <td style="padding:10px 12px;font-size:12px;color:var(--text)">${r.rule}</td>
-      </tr>`;
+    invalid.forEach(p => {
+      html += `<div style="display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);align-items:center">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--danger)">&#10007;</span>
+        <span style="font-size:11px;color:var(--muted);flex:1">${p.reason}: <span style="color:var(--danger)">${p.line}</span></span>
+      </div>`;
     });
-
-    html += `</tbody></table></div>`;
-
-    if (invalid.length) {
-      html += `<div style="padding:10px 14px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:8px;margin-bottom:12px">
-        <div style="font-size:11px;color:var(--danger);font-family:var(--mono);font-weight:600;margin-bottom:6px">${invalid.length} line(s) with errors (will be skipped):</div>`;
-      invalid.forEach(p => {
-        html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)">→ <span style="color:var(--danger)">${p.reason}</span>: ${p.line}</div>`;
-      });
-      html += `</div>`;
+    html += `</div>`;
+    if (valid.length) {
+      html += `<div style="margin-top:8px;font-size:12px;color:var(--muted)"><span style="color:var(--success);font-weight:600">${valid.length} valid</span>${invalid.length ? ` · <span style="color:var(--warn)">${invalid.length} with errors</span>` : ""}</div>`;
     }
-
-    html += `<div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-primary" onclick="importAssignmentBulkRules('${type}')">Import ${displayRules.length} Rule${displayRules.length > 1 ? "s" : ""}</button>
-      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">IDs will be auto-assigned</span>
-    </div>
-    <div id="bulkA${id}Status" style="margin-top:8px"></div>`;
-
-    const previewDiv = document.getElementById(`bulkA${id}Preview`);
-    previewDiv.innerHTML = html;
-    previewDiv.style.display = "block";
-    previewDiv._parsedValid = displayRules;
+    previewEl.innerHTML = html;
+    importBtn.disabled = valid.length === 0;
+    importBtn.textContent = valid.length ? `Import ${valid.length} Rule${valid.length > 1 ? "s" : ""}` : "Import 0 Rules";
   }
 
-  function importAssignmentBulkRules(type) {
-    const id = _assignmentBulkTypeId(type);
-    const previewDiv = document.getElementById(`bulkA${id}Preview`);
-    const valid = previewDiv._parsedValid;
-    if (!valid || !valid.length) return;
-
-    const startIdx = assignmentRules[type].length;
-    for (const r of valid) {
-      assignmentRules[type].push({ id: r.id, severity: r.severity, rule: r.rule });
+  async function executeBulkImport() {
+    const text = document.getElementById("bulkModalText").value;
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+    const parsed = [];
+    for (const line of lines) {
+      const idx = line.indexOf("|");
+      if (idx === -1) { parsed.push({ error: true, line, reason: "Missing '|'" }); continue; }
+      const severity = line.slice(0, idx).trim().toLowerCase();
+      const rule = line.slice(idx + 1).trim();
+      if (severity !== "violation" && severity !== "warning") { parsed.push({ error: true, line, reason: `Invalid severity '${severity}'` }); continue; }
+      if (!rule) { parsed.push({ error: true, line, reason: "Rule text is empty" }); continue; }
+      parsed.push({ error: false, severity, rule, line });
     }
+    const valid = parsed.filter(p => !p.error);
+    if (!valid.length) return;
 
-    const container = document.getElementById(`a${id}Rules`);
-    valid.forEach((r, i) => {
-      const idx = startIdx + i;
-      const div = document.createElement("div");
-      div.style.cssText = "display:flex;gap:8px;margin-bottom:8px;align-items:flex-start";
-      div.innerHTML = `
-        <input type="text" value="${r.id}" style="width:120px;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].id=this.value">
-        <select style="width:110px;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].severity=this.value">
-          <option value="violation" ${r.severity === "violation" ? "selected" : ""}>Violation</option>
-          <option value="warning" ${r.severity === "warning" ? "selected" : ""}>Warning</option>
-        </select>
-        <input type="text" value="${r.rule.replace(/"/g, "&quot;")}" style="flex:1;margin-bottom:0" onchange="assignmentRules['${type}'][${idx}].rule=this.value">`;
-      container.appendChild(div);
-    });
+    const statusEl = document.getElementById("bulkModalStatus");
+    const importBtn = document.getElementById("bulkImportBtn");
 
-    const statusDiv = document.getElementById(`bulkA${id}Status`);
-    statusDiv.innerHTML = `<span style="color:var(--success);font-weight:600">✅ Imported ${valid.length} rule${valid.length > 1 ? "s" : ""}</span>`;
-    document.getElementById(`bulkA${id}Text`).value = "";
-    setTimeout(() => { previewDiv.style.display = "none"; }, 2000);
+    if (_bulkContext === "global") {
+      importBtn.disabled = true;
+      importBtn.textContent = "Importing...";
+      try {
+        const res = await fetch(`${API}/rules/${_bulkType}/bulk`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ rules: valid.map(p => ({ severity: p.severity, rule: p.rule })) })
+        });
+        if (!res.ok) { const e = await res.json(); throw new Error(e.detail || "Import failed"); }
+        const result = await res.json();
+        const count = result.imported ? result.imported.length : 0;
+        const errCount = result.errors ? result.errors.length : 0;
+        let msg = `<span style="color:var(--success);font-weight:600">✅ Successfully imported ${count} rule${count > 1 ? "s" : ""}!</span>`;
+        if (errCount > 0) msg += `<div style="margin-top:4px;font-size:12px;color:var(--warn)">${errCount} rule(s) skipped.</div>`;
+        statusEl.innerHTML = msg;
+        statusEl.style.display = "block";
+        setTimeout(() => { closeBulkModal(); loadRules(); }, 1500);
+      } catch (err) {
+        statusEl.innerHTML = `<span style="color:var(--danger)">❌ ${err.message}</span>`;
+        statusEl.style.display = "block";
+        importBtn.disabled = false;
+        importBtn.textContent = `Import ${valid.length} Rule${valid.length > 1 ? "s" : ""}`;
+      }
+    } else {
+      const prefix = _bulkPrefix(_bulkType);
+      let nextNum = _bulkMaxNum(_bulkType) + 1;
+      const imported = valid.map(p => {
+        const id = `${prefix}${String(nextNum++).padStart(2, "0")}`;
+        return { id, severity: p.severity, rule: p.rule };
+      });
+      const startIdx = assignmentRules[_bulkType].length;
+      for (const r of imported) {
+        assignmentRules[_bulkType].push({ id: r.id, severity: r.severity, rule: r.rule });
+      }
+      const camelId = _bulkTypeId(_bulkType);
+      const container = document.getElementById(`a${camelId}Rules`);
+      imported.forEach((r, i) => {
+        const idx = startIdx + i;
+        const div = document.createElement("div");
+        div.style.cssText = "display:flex;gap:8px;margin-bottom:8px;align-items:flex-start";
+        div.innerHTML = `
+          <input type="text" value="${r.id}" style="width:120px;margin-bottom:0" onchange="assignmentRules['${_bulkType}'][${idx}].id=this.value">
+          <select style="width:110px;margin-bottom:0" onchange="assignmentRules['${_bulkType}'][${idx}].severity=this.value">
+            <option value="violation" ${r.severity === "violation" ? "selected" : ""}>Violation</option>
+            <option value="warning" ${r.severity === "warning" ? "selected" : ""}>Warning</option>
+          </select>
+          <input type="text" value="${r.rule.replace(/"/g, "&quot;")}" style="flex:1;margin-bottom:0" onchange="assignmentRules['${_bulkType}'][${idx}].rule=this.value">`;
+        container.appendChild(div);
+      });
+      statusEl.innerHTML = `<span style="color:var(--success);font-weight:600">✅ Imported ${imported.length} rule${imported.length > 1 ? "s" : ""}</span>`;
+      statusEl.style.background = "rgba(0,200,150,0.1)";
+      statusEl.style.color = "var(--success)";
+      statusEl.style.display = "block";
+      setTimeout(() => { closeBulkModal(); }, 1500);
+    }
   }
 
   async function saveAssignment() {
@@ -1096,142 +1055,6 @@
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/^- (.+)/gm, '<li style="margin-left:16px;margin-bottom:4px">$1</li>')
       .replace(/\n/g, '<br>');
-  }
-
-  // Bulk Rules
-  function toggleBulkSection() {
-    const section = document.getElementById("bulkSection");
-    const btn = document.getElementById("bulkToggleBtn");
-    const isOpen = section.style.display !== "none";
-    section.style.display = isOpen ? "none" : "block";
-    btn.textContent = isOpen ? "+ Expand" : "- Collapse";
-  }
-
-  function clearBulkRules() {
-    document.getElementById("bulkRulesText").value = "";
-    document.getElementById("bulkPreview").style.display = "none";
-  }
-
-  async function previewBulkRules() {
-    const text = document.getElementById("bulkRulesText").value.trim();
-    if (!text) return alert("Paste at least one rule.");
-
-    const lines = text.split("\n").map(l => l.trim()).filter(l => l);
-    const parsed = [];
-    for (const line of lines) {
-      const idx = line.indexOf("|");
-      if (idx === -1) {
-        parsed.push({ error: true, line, reason: "Missing '|' separator" });
-        continue;
-      }
-      const severity = line.slice(0, idx).trim().toLowerCase();
-      const rule = line.slice(idx + 1).trim();
-      if (severity !== "violation" && severity !== "warning") {
-        parsed.push({ error: true, line, reason: `Invalid severity '${severity}'` });
-        continue;
-      }
-      if (!rule) {
-        parsed.push({ error: true, line, reason: "Rule text is empty" });
-        continue;
-      }
-      parsed.push({ error: false, severity, rule, line });
-    }
-
-    const valid = parsed.filter(p => !p.error);
-    const invalid = parsed.filter(p => p.error);
-
-    if (!valid.length) {
-      document.getElementById("bulkPreview").innerHTML = `<div style="padding:12px;background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);border-radius:8px;color:var(--danger);font-size:13px">No valid rules found. Fix errors and try again.</div>`;
-      document.getElementById("bulkPreview").style.display = "block";
-      return;
-    }
-
-    let html = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead>
-          <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
-            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">#</th>
-            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">Severity</th>
-            <th style="padding:10px 12px;text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase">Rule</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-    valid.forEach((p, i) => {
-      const sevColor = p.severity === "violation" ? "var(--danger)" : "var(--warn)";
-      html += `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:10px 12px;font-family:var(--mono);font-size:11px;color:var(--accent)">${document.getElementById("ruleType").value.toUpperCase()}${(i + 1).toString().padStart(3, "0")}*</td>
-        <td style="padding:10px 12px;font-family:var(--mono);font-size:11px;color:${sevColor}">${p.severity}</td>
-        <td style="padding:10px 12px;font-size:12px;color:var(--text)">${p.rule}</td>
-      </tr>`;
-    });
-
-    html += `</tbody></table></div>`;
-
-    if (invalid.length) {
-      html += `<div style="padding:10px 14px;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:8px;margin-bottom:12px">
-        <div style="font-size:11px;color:var(--danger);font-family:var(--mono);font-weight:600;margin-bottom:6px">${invalid.length} line(s) with errors (will be skipped):</div>`;
-      invalid.forEach(p => {
-        html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)">→ <span style="color:var(--danger)">${p.reason}</span>: ${p.line}</div>`;
-      });
-      html += `</div>`;
-    }
-
-    html += `<div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-primary" onclick="importBulkRules()">Import ${valid.length} Rule${valid.length > 1 ? "s" : ""}</button>
-      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">* IDs will be auto-assigned</span>
-    </div>
-    <div id="bulkStatus" style="margin-top:8px"></div>`;
-
-    const previewDiv = document.getElementById("bulkPreview");
-    previewDiv.innerHTML = html;
-    previewDiv.style.display = "block";
-    previewDiv._parsedValid = valid;
-  }
-
-  async function importBulkRules() {
-    const previewDiv = document.getElementById("bulkPreview");
-    const valid = previewDiv._parsedValid;
-    if (!valid || !valid.length) return;
-
-    const type = document.getElementById("ruleType").value;
-    const payload = { rules: valid.map(p => ({ severity: p.severity, rule: p.rule })) };
-
-    const statusDiv = document.getElementById("bulkStatus");
-    statusDiv.innerHTML = `<span style="color:var(--muted)">Importing...</span>`;
-
-    try {
-      const res = await fetch(`${API}/rules/${type}/bulk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.detail || "Import failed");
-      }
-
-      const result = await res.json();
-      const count = result.imported ? result.imported.length : 0;
-      const errCount = result.errors ? result.errors.length : 0;
-      let msg = `<span style="color:var(--success);font-weight:600">✅ Successfully imported ${count} rule${count > 1 ? "s" : ""}!</span>`;
-      if (errCount > 0) {
-        msg += `<div style="margin-top:6px;font-size:12px;color:var(--warn)">${errCount} rule(s) were skipped due to errors.</div>`;
-      }
-
-      if (result.imported && result.imported.length) {
-        const ids = result.imported.map(r => r.id);
-        msg += `<div style="margin-top:6px;font-size:11px;color:var(--muted);font-family:var(--mono)">Assigned IDs: ${ids.join(", ")}</div>`;
-      }
-
-      statusDiv.innerHTML = msg;
-      previewDiv.style.display = "none";
-      document.getElementById("bulkRulesText").value = "";
-      loadRules();
-    } catch (err) {
-      statusDiv.innerHTML = `<span style="color:var(--danger)">❌ ${err.message}</span>`;
-    }
   }
 
   loadAllReviews();
