@@ -1,4 +1,6 @@
 import json
+import secrets
+import string
 import urllib.request
 from urllib.error import HTTPError
 from fastapi import APIRouter, HTTPException, Header
@@ -133,6 +135,41 @@ def list_users(authorization: str = Header(...)):
         })
 
     return result
+
+@router.post("/forgot-password")
+def forgot_password(req: LoginRequest):
+    email = req.email.lower()
+    if not email.endswith("@vaaluka.com"):
+        raise HTTPException(status_code=400, detail="Only @vaaluka.com emails allowed")
+
+    svc = get_service_client()
+    try:
+        page = svc.auth.admin.list_users()
+        user = next((u for u in page if u.email == email), None)
+        if not user:
+            raise HTTPException(status_code=404, detail="Email not found")
+        return {"message": "Password reset initiated. Contact your admin."}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to process request")
+
+@router.post("/users/{user_id}/reset-password")
+def reset_user_password(user_id: str, authorization: str = Header(...)):
+    payload = verify_token(authorization)
+    svc = get_service_client()
+
+    caller = svc.table("profiles").select("*").eq("id", payload["user_id"]).single().execute()
+    if caller.data["role"] != "senior":
+        raise HTTPException(status_code=403, detail="Only seniors can reset passwords")
+
+    temp_password = "Temp@" + "".join(secrets.choice(string.digits) for _ in range(6))
+
+    try:
+        svc.auth.admin.update_user_by_id(user_id, {"password": temp_password})
+        return {"message": "Password reset successfully", "temp_password": temp_password}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to reset password: {str(e)}")
 
 @router.delete("/users/{user_id}")
 def delete_user(user_id: str, authorization: str = Header(...)):

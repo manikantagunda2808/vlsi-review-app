@@ -148,6 +148,22 @@ async def run_review(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.delete("/{review_id}")
+def delete_review(review_id: str, authorization: str = Header(...)):
+    payload = verify_token(authorization)
+    svc = get_service_client()
+
+    caller = svc.table("profiles").select("*").eq("id", payload["user_id"]).single().execute()
+    if caller.data["role"] != "senior":
+        raise HTTPException(status_code=403, detail="Only seniors can delete reviews")
+
+    review = svc.table("reviews").select("*").eq("id", review_id).single().execute()
+    if not review.data:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    svc.table("reviews").delete().eq("id", review_id).execute()
+    return {"message": "Review deleted successfully"}
+
 class PasteReviewRequest(BaseModel):
     review_type: str
     code: str

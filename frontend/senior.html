@@ -436,7 +436,10 @@
           <div style="font-size:13px;color:var(--muted);margin-bottom:4px">${r.summary}</div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
             <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${r.violations ? r.violations.length : 0} violations · ${r.warnings ? r.warnings.length : 0} warnings</div>
-            <button class="btn-primary" style="width:auto;padding:5px 12px;font-size:11px" onclick="emailReview('${r.id}')">📧 Email Report</button>
+            <div style="display:flex;gap:6px">
+              <button class="btn-danger" style="width:auto;padding:5px 12px;font-size:11px" onclick="deleteReview('${r.id}')">Delete</button>
+              <button class="btn-primary" style="width:auto;padding:5px 12px;font-size:11px" onclick="emailReview('${r.id}')">📧 Email Report</button>
+            </div>
           </div>
         </div>`;
     });
@@ -986,13 +989,26 @@
             <td style="padding:12px 14px;color:var(--text);font-weight:600">${u.name}</td>
             <td style="padding:12px 14px;color:var(--muted);font-family:var(--mono);font-size:12px">${u.email}</td>
             <td style="padding:12px 14px">${rolePill}</td>
-            <td style="padding:12px 14px">
+            <td style="padding:12px 14px;display:flex;gap:6px">
+              <button class="btn-secondary" onclick="resetPassword('${u.user_id}','${u.name}')" style="margin:0;font-size:10px;padding:4px 10px">Reset Pwd</button>
               <button class="btn-danger" onclick="deleteUser('${u.user_id}','${u.name}')" ${u.role === "senior" ? "disabled title='Cannot delete admins'" : ""}>Delete</button>
             </td>
           </tr>`;
       });
       html += `</tbody></table></div>`;
       document.getElementById("usersList").innerHTML = html;
+    }
+  }
+
+  async function resetPassword(userId, userName) {
+    if (!confirm(`Reset password for "${userName}"?`)) return;
+    const res = await fetch(`${API}/auth/users/${userId}/reset-password`, { method: "POST", headers: { "Authorization": `Bearer ${token}` } });
+    if (res.ok) {
+      const data = await res.json();
+      alert(`Password for "${userName}" has been reset.\n\nNew temporary password: ${data.temp_password}\n\nShare this with the user.`);
+    } else {
+      const data = await res.json();
+      alert(data.detail || "Failed to reset password");
     }
   }
 
@@ -1004,6 +1020,19 @@
     } else {
       const data = await res.json();
       alert(data.detail || "Failed to delete user");
+    }
+  }
+
+  async function deleteReview(reviewId) {
+    if (!confirm("Delete this review permanently?")) return;
+    const res = await fetch(`${API}/review/${reviewId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
+    if (res.ok) {
+      allReviews = allReviews.filter(r => r.id !== reviewId);
+      updateStats(allReviews);
+      renderReviews(allReviews);
+    } else {
+      const data = await res.json();
+      alert(data.detail || "Failed to delete review");
     }
   }
 
