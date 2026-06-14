@@ -57,7 +57,8 @@ def signup(req: SignupRequest):
         "access_token": token,
         "user_id": user_id,
         "name": profile.data["name"],
-        "role": profile.data["role"]
+        "role": profile.data["role"],
+        "email": email
     }
 
 @router.post("/login")
@@ -103,7 +104,8 @@ def login(req: LoginRequest):
         "access_token": token,
         "user_id": user_id,
         "name": profile.data["name"],
-        "role": profile.data["role"]
+        "role": profile.data["role"],
+        "email": email
     }
 
 @router.get("/me")
