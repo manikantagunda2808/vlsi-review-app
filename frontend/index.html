@@ -54,8 +54,8 @@
       color: #2D3270;
       border-bottom-color: #2D3270;
     }
-    .form-step { display: none; }
-    .form-step.active { display: block; }
+    .form-pane { display: none; }
+    .form-pane.active { display: block; }
     label {
       font-size: 12px;
       color: #6b7280;
@@ -95,47 +95,6 @@
       margin-top: 8px;
       display: none;
     }
-    .success {
-      font-size: 12px;
-      color: #16a34a;
-      margin-top: 8px;
-      display: none;
-    }
-    .back-link {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 13px;
-      color: #6b7280;
-    }
-    .back-link span {
-      color: #2D3270;
-      cursor: pointer;
-    }
-    .otp-input {
-      text-align: center;
-      font-size: 24px;
-      letter-spacing: 8px;
-      font-family: monospace;
-    }
-    .info-text {
-      font-size: 12px;
-      color: #6b7280;
-      text-align: center;
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
-    .resend {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 12px;
-    }
-    .resend a {
-      color: #2D3270;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .resend a:disabled { color: #6b7280; cursor: default; }
-    .timer { color: #6b7280; }
   </style>
 </head>
 <body>
@@ -148,125 +107,42 @@
     <div class="tab" id="tabSignup" onclick="switchTab('signup')">Sign Up</div>
   </div>
 
-  <!-- Step 1: Email (and name for signup) -->
-  <div id="stepEmail">
-    <div id="loginEmailForm">
-      <label>Email (@vaaluka.com)</label>
-      <input type="email" id="loginEmail" placeholder="you@vaaluka.com">
-      <button id="sendLoginOtpBtn" onclick="sendOtp('login')">Send OTP</button>
-    </div>
-    <div id="signupEmailForm" style="display:none">
-      <label>Full Name</label>
-      <input type="text" id="signupName" placeholder="Your name">
-      <label>Email (@vaaluka.com)</label>
-      <input type="email" id="signupEmail" placeholder="you@vaaluka.com">
-      <button id="sendSignupOtpBtn" onclick="sendOtp('signup')">Send OTP</button>
-    </div>
-    <div class="error" id="stepError"></div>
+  <div class="form-pane active" id="paneLogin">
+    <label>Email (@vaaluka.com)</label>
+    <input type="email" id="loginEmail" placeholder="you@vaaluka.com">
+    <label>Password</label>
+    <input type="password" id="loginPassword" placeholder="Enter your password">
+    <button id="loginBtn" onclick="login()">Login</button>
+    <div class="error" id="loginError"></div>
   </div>
 
-  <!-- Step 2: OTP Verification -->
-  <div id="stepOtp" style="display:none">
-    <p class="info-text" id="otpSentTo">OTP sent to <strong id="otpEmail"></strong></p>
-    <label>Enter OTP</label>
-    <input type="text" id="otpInput" class="otp-input" maxlength="6" placeholder="000000" inputmode="numeric" autocomplete="one-time-code">
-    <button id="verifyOtpBtn" onclick="verifyOtp()">Verify & Continue</button>
-    <div class="error" id="otpError"></div>
-    <div class="resend">
-      <span class="timer" id="resendTimer">Resend in 30s</span>
-      <a id="resendLink" style="display:none" onclick="resendOtp()">Resend OTP</a>
-    </div>
-    <div class="back-link"><span onclick="goBack()">← Change email</span></div>
+  <div class="form-pane" id="paneSignup">
+    <label>Full Name</label>
+    <input type="text" id="signupName" placeholder="Your name">
+    <label>Email (@vaaluka.com)</label>
+    <input type="email" id="signupEmail" placeholder="you@vaaluka.com">
+    <label>Password</label>
+    <input type="password" id="signupPassword" placeholder="Create a password">
+    <button id="signupBtn" onclick="signup()">Sign Up</button>
+    <div class="error" id="signupError"></div>
   </div>
 </div>
 
 <script>
   const API = "";
-  let currentMode = "login";
-  let pendingEmail = "";
-  let pendingName = "";
-  let resendTimeout = null;
-  let resendCountdown = 30;
 
   function switchTab(mode) {
-    currentMode = mode;
     document.getElementById("tabLogin").classList.toggle("active", mode === "login");
     document.getElementById("tabSignup").classList.toggle("active", mode === "signup");
-    document.getElementById("loginEmailForm").style.display = mode === "login" ? "block" : "none";
-    document.getElementById("signupEmailForm").style.display = mode === "signup" ? "block" : "none";
-    document.getElementById("stepOtp").style.display = "none";
-    document.getElementById("stepEmail").style.display = "block";
-    document.getElementById("stepError").style.display = "none";
+    document.getElementById("paneLogin").classList.toggle("active", mode === "login");
+    document.getElementById("paneSignup").classList.toggle("active", mode === "signup");
+    document.getElementById("loginError").style.display = "none";
+    document.getElementById("signupError").style.display = "none";
   }
 
-  async function sendOtp(mode) {
-    const emailInput = mode === "login" ? "loginEmail" : "signupEmail";
-    const email = document.getElementById(emailInput).value.trim().toLowerCase();
-    const btnId = mode === "login" ? "sendLoginOtpBtn" : "sendSignupOtpBtn";
-    const btn = document.getElementById(btnId);
-
-    if (!email.endsWith("@vaaluka.com")) {
-      showError("Only @vaaluka.com emails allowed");
-      return;
-    }
-
-    let name = "";
-    if (mode === "signup") {
-      name = document.getElementById("signupName").value.trim();
-      if (!name) { showError("Please enter your name"); return; }
-    }
-
-    pendingEmail = email;
-    pendingName = name;
-    btn.disabled = true;
-    btn.textContent = "Sending...";
-
-    const res = await fetch(`${API}/auth/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, name: name || undefined })
-    });
-
-    btn.disabled = false;
-    btn.textContent = "Send OTP";
-
+  function handleAuthResponse(res, data) {
     if (res.ok) {
-      document.getElementById("stepEmail").style.display = "none";
-      document.getElementById("stepOtp").style.display = "block";
-      document.getElementById("otpEmail").textContent = email;
-      document.getElementById("otpInput").value = "";
-      document.getElementById("otpError").style.display = "none";
-      startResendTimer();
-    } else {
-      const data = await res.json();
-      showError(data.detail || "Failed to send OTP");
-    }
-  }
-
-  async function verifyOtp() {
-    const otp = document.getElementById("otpInput").value.trim();
-    if (!otp || otp.length !== 6) {
-      document.getElementById("otpError").textContent = "Enter the 6-digit OTP";
-      document.getElementById("otpError").style.display = "block";
-      return;
-    }
-
-    const btn = document.getElementById("verifyOtpBtn");
-    btn.disabled = true;
-    btn.textContent = "Verifying...";
-
-    const res = await fetch(`${API}/auth/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: pendingEmail, otp })
-    });
-
-    btn.disabled = false;
-    btn.textContent = "Verify & Continue";
-
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem("email", pendingEmail);
+      localStorage.setItem("email", data.email || "");
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("name", data.name);
       localStorage.setItem("role", data.role);
@@ -281,52 +157,89 @@
       } else {
         window.location.href = "/junior.html";
       }
-    } else {
+      return true;
+    }
+    return false;
+  }
+
+  async function login() {
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+    const btn = document.getElementById("loginBtn");
+    const errorEl = document.getElementById("loginError");
+
+    if (!email.endsWith("@vaaluka.com")) {
+      errorEl.textContent = "Only @vaaluka.com emails allowed";
+      errorEl.style.display = "block";
+      return;
+    }
+    if (!password) {
+      errorEl.textContent = "Enter your password";
+      errorEl.style.display = "block";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Logging in...";
+    errorEl.style.display = "none";
+
+    const res = await fetch(`${API}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    btn.disabled = false;
+    btn.textContent = "Login";
+
+    if (!handleAuthResponse(res, await res.json())) {
       const data = await res.json();
-      document.getElementById("otpError").textContent = data.detail || "Invalid OTP. Try again.";
-      document.getElementById("otpError").style.display = "block";
+      errorEl.textContent = data.detail || "Login failed";
+      errorEl.style.display = "block";
     }
   }
 
-  function resendOtp() {
-    if (resendTimeout) {
-      clearInterval(resendTimeout);
-      resendTimeout = null;
+  async function signup() {
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+    const password = document.getElementById("signupPassword").value;
+    const btn = document.getElementById("signupBtn");
+    const errorEl = document.getElementById("signupError");
+
+    if (!name) {
+      errorEl.textContent = "Please enter your name";
+      errorEl.style.display = "block";
+      return;
     }
-    sendOtp(currentMode);
-  }
-
-  function startResendTimer() {
-    resendCountdown = 30;
-    document.getElementById("resendTimer").style.display = "inline";
-    document.getElementById("resendLink").style.display = "none";
-
-    if (resendTimeout) clearInterval(resendTimeout);
-    resendTimeout = setInterval(() => {
-      resendCountdown--;
-      document.getElementById("resendTimer").textContent = `Resend in ${resendCountdown}s`;
-      if (resendCountdown <= 0) {
-        clearInterval(resendTimeout);
-        resendTimeout = null;
-        document.getElementById("resendTimer").style.display = "none";
-        document.getElementById("resendLink").style.display = "inline";
-      }
-    }, 1000);
-  }
-
-  function goBack() {
-    document.getElementById("stepOtp").style.display = "none";
-    document.getElementById("stepEmail").style.display = "block";
-    if (resendTimeout) {
-      clearInterval(resendTimeout);
-      resendTimeout = null;
+    if (!email.endsWith("@vaaluka.com")) {
+      errorEl.textContent = "Only @vaaluka.com emails allowed";
+      errorEl.style.display = "block";
+      return;
     }
-  }
+    if (!password) {
+      errorEl.textContent = "Create a password";
+      errorEl.style.display = "block";
+      return;
+    }
 
-  function showError(msg) {
-    const el = document.getElementById("stepError");
-    el.textContent = msg;
-    el.style.display = "block";
+    btn.disabled = true;
+    btn.textContent = "Creating account...";
+    errorEl.style.display = "none";
+
+    const res = await fetch(`${API}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name })
+    });
+
+    btn.disabled = false;
+    btn.textContent = "Sign Up";
+
+    if (!handleAuthResponse(res, await res.json())) {
+      const data = await res.json();
+      errorEl.textContent = data.detail || "Signup failed";
+      errorEl.style.display = "block";
+    }
   }
 </script>
 </body>

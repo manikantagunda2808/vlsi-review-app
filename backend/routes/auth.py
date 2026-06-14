@@ -1,103 +1,95 @@
-import secrets
-import string
-from datetime import datetime, timedelta
+import json
+import urllib.request
+from urllib.error import HTTPError
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
+from backend.config import SUPABASE_URL, SUPABASE_ANON_KEY
 from backend.services.supabase_service import get_service_client
 from backend.services.auth_utils import create_token, verify_token
-from backend.services.email_service import send_otp_email
 
 router = APIRouter()
 
-otp_store = {}
-
-def generate_otp() -> str:
-    return "".join(secrets.choice(string.digits) for _ in range(6))
-
-class SendOTPRequest(BaseModel):
+class SignupRequest(BaseModel):
     email: str
-    name: str | None = None
+    password: str
+    name: str
 
-class VerifyOTPRequest(BaseModel):
+class LoginRequest(BaseModel):
     email: str
-    otp: str
+    password: str
 
-def find_auth_user_id(email: str) -> str | None:
+@router.post("/signup")
+def signup(req: SignupRequest):
+    if not req.email.lower().endswith("@vaaluka.com"):
+        raise HTTPException(status_code=400, detail="Only @vaaluka.com emails allowed")
+
+    email = req.email.lower()
     svc = get_service_client()
+
     try:
-        page = svc.auth.admin.list_users()
-        for user in page:
-            if user.email == email:
-                return user.id
-    except Exception:
-        pass
-    return None
+        result = svc.auth.admin.create_user({
+            "email": email,
+            "password": req.password,
+            "email_confirm": True
+        })
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Signup failed: {str(e)}")
 
-def create_auth_user(email: str) -> str:
-    svc = get_service_client()
-    password = secrets.token_urlsafe(16)
-    result = svc.auth.admin.create_user({
-        "email": email,
-        "password": password,
-        "email_confirm": True
-    })
-    return result.user.id
+    user_id = result.user.id
 
-@router.post("/send-otp")
-def send_otp(req: SendOTPRequest):
-    if not req.email.lower().endswith("@vaaluka.com"):
-        raise HTTPException(status_code=400, detail="Only @vaaluka.com emails allowed")
-
-    email = req.email.lower()
-    code = generate_otp()
-
-    otp_store[email] = {
-        "otp": code,
-        "name": req.name.strip() if req.name else None,
-        "expires_at": datetime.utcnow() + timedelta(minutes=10)
-    }
-
-    print(f"\n=== OTP for {email}: {code} ===\n")
-    send_otp_email(email, code)
-
-    return {"message": "OTP sent to your email"}
-
-@router.post("/verify-otp")
-def verify_otp(req: VerifyOTPRequest):
-    if not req.email.lower().endswith("@vaaluka.com"):
-        raise HTTPException(status_code=400, detail="Only @vaaluka.com emails allowed")
-
-    email = req.email.lower()
-    entry = otp_store.pop(email, None)
-
-    if not entry:
-        raise HTTPException(status_code=400, detail="No OTP requested. Please send OTP first.")
-    if entry["expires_at"] < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="OTP has expired. Request a new one.")
-    if entry["otp"] != req.otp.strip():
-        raise HTTPException(status_code=400, detail="Invalid OTP. Try again.")
-
-    svc = get_service_client()
-
-    user_id = find_auth_user_id(email)
-
-    if user_id:
-        profile_resp = svc.table("profiles").select("*").eq("id", user_id).execute()
-        has_profile = bool(profile_resp.data)
-    else:
-        has_profile = False
-        if not entry["name"]:
-            raise HTTPException(status_code=400, detail="Email not registered. Please sign up first.")
-        user_id = create_auth_user(email)
-
-    if not has_profile:
-        svc.table("profiles").insert({
-            "id": user_id,
-            "name": entry["name"],
-            "role": "junior"
-        }).execute()
+    svc.table("profiles").insert({
+        "id": user_id,
+        "name": req.name.strip(),
+        "role": "junior"
+    }).execute()
 
     profile = svc.table("profiles").select("*").eq("id", user_id).single().execute()
+    token = create_token(user_id, profile.data["role"])
+
+    return {
+        "access_token": token,
+        "user_id": user_id,
+        "name": profile.data["name"],
+        "role": profile.data["role"]
+    }
+
+@router.post("/login")
+def login(req: LoginRequest):
+    if not req.email.lower().endswith("@vaaluka.com"):
+        raise HTTPException(status_code=400, detail="Only @vaaluka.com emails allowed")
+
+    email = req.email.lower()
+
+    url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
+    payload = json.dumps({"email": email, "password": req.password}).encode()
+
+    request = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+        },
+        method="POST"
+    )
+
+    try:
+        response = urllib.request.urlopen(request)
+        body = json.loads(response.read().decode())
+        user_id = body["user"]["id"]
+    except HTTPError as e:
+        if e.code == 400:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=400, detail="Login failed")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Login failed: {str(e)}")
+
+    svc = get_service_client()
+    profile = svc.table("profiles").select("*").eq("id", user_id).single().execute()
+
+    if not profile.data:
+        raise HTTPException(status_code=400, detail="Profile not found. Please sign up.")
+
     token = create_token(user_id, profile.data["role"])
 
     return {
