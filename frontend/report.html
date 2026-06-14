@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLSI Review ΓÇö Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f6f9; --surface: #ffffff; --surface2: #eef1f5;
+      --border: #d1d5db; --accent: #2D3270;
+      --success: #16a34a; --warn: #d97706; --danger: #dc2626;
+      --text: #1f2937; --muted: #6b7280;
+      --mono: 'JetBrains Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+    .navbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 2rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .navbar-brand { display: flex; align-items: center; gap: 10px; }
+    .navbar-brand .logo { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+    .pill {
+      font-size: 10px; padding: 3px 8px; border-radius: 20px;
+      background: rgba(45,50,112,0.15); color: var(--accent);
+      font-family: var(--mono); border: 1px solid rgba(45,50,112,0.3);
+    }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .score-card {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 1rem;
+    }
+    .score-circle {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; flex-shrink: 0; font-family: var(--mono);
+    }
+    .sc-good { background: rgba(0,200,150,0.15); color: var(--success); border: 1px solid rgba(0,200,150,0.3); }
+    .sc-warn { background: rgba(245,166,35,0.15); color: var(--warn); border: 1px solid rgba(245,166,35,0.3); }
+    .sc-bad { background: rgba(255,77,109,0.15); color: var(--danger); border: 1px solid rgba(255,77,109,0.3); }
+    .score-label strong { font-size: 14px; color: var(--text); display: block; margin-bottom: 2px; }
+    .score-label span { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    .meta-row { display: flex; gap: 12px; align-items: center; margin-bottom: 1rem; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    .section-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted); margin: 1rem 0 8px; font-family: var(--mono);
+    }
+    .finding {
+      padding: 10px 14px; border-radius: 8px; margin-bottom: 6px;
+      font-size: 13px; line-height: 1.6;
+    }
+    .finding.violation { background: rgba(255,77,109,0.08); border-left: 3px solid var(--danger); }
+    .finding.warning { background: rgba(245,166,35,0.08); border-left: 3px solid var(--warn); }
+    .finding.pass { background: rgba(0,200,150,0.08); border-left: 3px solid var(--success); }
+    .rule-id {
+      font-family: var(--mono); font-size: 10px;
+      background: var(--surface2); padding: 2px 6px;
+      border-radius: 4px; margin-right: 6px; color: var(--accent);
+    }
+    .summary-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px; font-size: 13px;
+      color: var(--muted); line-height: 1.7; margin-top: 1rem;
+    }
+    .loading { color: var(--muted); font-size: 13px; font-family: var(--mono); }
+    .badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; font-family: var(--mono); }
+    .badge.rtl { background: rgba(45,50,112,0.15); color: var(--accent); }
+    .badge.sv { background: rgba(0,200,150,0.15); color: var(--success); }
+    .badge.verilog_tb { background: rgba(0,200,150,0.15); color: var(--success); }
+    .badge.uvm { background: rgba(124,77,255,0.15); color: #9c8fff; }
+    .badge.mixed { background: rgba(245,166,35,0.15); color: var(--warn); }
+    .footer-note { margin-top: 2rem; font-size: 11px; color: var(--muted); text-align: center; font-family: var(--mono); }
+    .error-box {
+      background: rgba(255,77,109,0.08); border: 1px solid var(--danger);
+      border-radius: 8px; padding: 2rem; text-align: center; font-size: 14px; color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="navbar-brand">
+      <span class="logo">VLSI Review</span>
+      <span class="pill">REPORT</span>
+    </div>
+  </div>
+  <div class="container" id="mainContainer">
+    <p class="loading" id="loadingMsg">Loading report...</p>
+  </div>
+  <div class="footer-note">VLSI Review App ┬╖ Read-only report</div>
+
+  <script>
+    const API = "";
+
+    function getReviewId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
+
+    async function main() {
+      const reviewId = getReviewId();
+      if (!reviewId) {
+        document.getElementById("mainContainer").innerHTML = '<div class="error-box">No review ID specified.</div>';
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        localStorage.setItem("redirectAfterLogin", window.location.href);
+        window.location.href = "/";
+        return;
+      }
+
+      const res = await fetch(`${API}/review/${reviewId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        localStorage.setItem("redirectAfterLogin", window.location.href);
+        window.location.href = "/";
+        return;
+      }
+
+      if (!res.ok) {
+        document.getElementById("mainContainer").innerHTML = '<div class="error-box">Review not found or access denied.</div>';
+        return;
+      }
+
+      const data = await res.json();
+      renderReport(data);
+    }
+
+    function renderReport(data) {
+      const score = data.score;
+      const cls = score >= 7 ? "sc-good" : score >= 5 ? "sc-warn" : "sc-bad";
+      const emoji = score >= 7 ? "\u2705" : score >= 5 ? "\u26A0\uFE0F" : "\u274C";
+      const label = score >= 7 ? "Good \u2014 minor fixes needed" : score >= 5 ? "Needs improvements" : "Major issues found";
+
+      let html = `
+        <div style="margin-bottom:1.5rem">
+          <h1 style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px">Code Review Report</h1>
+          <div class="meta-row">
+            <span>User: <strong>${data.user_name || "Unknown"}</strong></span>
+            <span>|</span>
+            <span class="badge ${data.review_type}">${(data.review_type || "N/A").toUpperCase()}</span>
+            <span>|</span>
+            <span>${new Date(data.created_at).toLocaleString()}</span>
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-circle ${cls}">${score}</div>
+          <div class="score-label">
+            <strong>${emoji} ${label}</strong>
+            <span>${(data.violations || []).length} violations \u00B7 ${(data.warnings || []).length} warnings \u00B7 ${(data.passed || []).length} passed</span>
+          </div>
+        </div>`;
+
+      if (data.violations && data.violations.length) {
+        html += '<div class="section-title">Violations \u2014 must fix</div>';
+        data.violations.forEach(v => {
+          html += `<div class="finding violation"><span class="rule-id">${v.rule_id}</span>${v.message} <span style="color:var(--muted);font-size:11px;font-family:var(--mono)">\u00B7 line ${v.line}</span></div>`;
+        });
+      }
+
+      if (data.warnings && data.warnings.length) {
+        html += '<div class="section-title">Warnings</div>';
+        data.warnings.forEach(w => {
+          html += `<div class="finding warning"><span class="rule-id">${w.rule_id}</span>${w.message} <span style="color:var(--muted);font-size:11px;font-family:var(--mono)">\u00B7 line ${w.line}</span></div>`;
+        });
+      }
+
+      if (data.passed && data.passed.length) {
+        html += '<div class="section-title">Passed</div>';
+        data.passed.forEach(p => { html += `<div class="finding pass">${p}</div>`; });
+      }
+
+      html += `<div class="summary-box"><strong style="color:var(--text)">Summary:</strong> ${data.summary}</div>`;
+
+      if (data.code) {
+        html += '<div class="section-title" style="margin-top:1.5rem">Submitted Code</div>';
+        html += `<pre style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;font-family:var(--mono);overflow-x:auto;line-height:1.6;color:var(--text);max-height:400px;overflow-y:auto">${escapeHtml(data.code)}</pre>`;
+      }
+
+      document.getElementById("mainContainer").innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    main();
+  </script>
+</body>
+</html>

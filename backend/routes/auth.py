@@ -57,6 +57,7 @@ def send_otp(req: SendOTPRequest):
         "expires_at": datetime.utcnow() + timedelta(minutes=10)
     }
 
+    print(f"\n=== OTP for {email}: {code} ===\n")
     send_otp_email(email, code)
 
     return {"message": "OTP sent to your email"}

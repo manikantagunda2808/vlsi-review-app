@@ -517,39 +517,38 @@
     document.getElementById("emailModal").classList.remove("open");
   }
 
-  async function sendEmailReport() {
+  function sendEmailReport() {
     const recipients = getRecipients();
     if (!recipients.length) { document.getElementById("recipientInput").focus(); return; }
 
-    const btn = document.getElementById("sendEmailBtn");
-    btn.disabled = true;
-    btn.textContent = "Sending...";
+    const review = reviewToEmail;
+    if (!review) return;
 
-    const res = await fetch(`${API}/review/email-report`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ recipients, review_result: reviewToEmail, user_name: name, repo_url: document.getElementById("repoUrl").value.trim() })
-    });
+    const repoUrl = document.getElementById("repoUrl").value.trim();
 
-    const status = document.getElementById("emailStatus");
-    document.getElementById("sendEmailBtn").disabled = false;
-    if (res.ok) {
-      status.textContent = "✅ Report sent successfully!";
-      status.style.background = "rgba(0,200,150,0.1)";
-      status.style.color = "var(--success)";
-      status.style.border = "1px solid rgba(0,200,150,0.3)";
-      status.style.display = "block";
-      btn.textContent = "Done";
-      setTimeout(() => { document.getElementById("emailModal").classList.remove("open"); }, 1500);
-    } else {
-      const data = await res.json();
-      status.textContent = "❌ " + (data.detail || "Failed to send email");
-      status.style.background = "rgba(255,77,109,0.1)";
-      status.style.color = "var(--danger)";
-      status.style.border = "1px solid rgba(255,77,109,0.3)";
-      status.style.display = "block";
-      btn.textContent = "Send Report";
+    const violations = review.violations || [];
+    const warnings = review.warnings || [];
+    const passed = review.passed || [];
+
+    let body = `VLSI Code Review Report\n========================\nUser: ${name}\nScore: ${review.score}/10\n\n`;
+
+    if (review.summary) {
+      body += `Summary:\n${review.summary}\n\n`;
     }
+
+    body += `Violations: ${violations.length}\nWarnings: ${warnings.length}\nPassed: ${passed.length}\n\n`;
+
+    if (repoUrl) {
+      body += `Repo URL: ${repoUrl}\n\n`;
+    }
+
+    const reportUrl = `${window.location.origin}/report.html?id=${review.review_id}`;
+    body += `---\nView full report: ${reportUrl}\n---\nVLSI Review App · Auto-generated email`;
+
+    const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(recipients.join(";"))}&subject=${encodeURIComponent(`VLSI Code Review Report — ${name}`)}&body=${encodeURIComponent(body)}`;
+    window.location.href = outlookUrl;
+
+    document.getElementById("emailModal").classList.remove("open");
   }
 
   // Assignments

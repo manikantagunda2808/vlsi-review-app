@@ -9,6 +9,21 @@ import io
 
 router = APIRouter()
 
+@router.get("/{review_id}")
+def get_review(review_id: str, authorization: str = Header(None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = verify_token(authorization)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    svc = get_service_client()
+    review = svc.table("reviews").select("*").eq("id", review_id).single().execute()
+    if not review.data:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return review.data
+
 def detect_file_type_from_path(path: str) -> str | None:
     """Detect file type based on ZIP folder path.
     - Files in RTL/rtl/ → rtl
@@ -109,7 +124,7 @@ async def run_review(
         final_summary = " | ".join(combined_summary)
 
         # save to supabase
-        svc.table("reviews").insert({
+        insert_resp = svc.table("reviews").insert({
             "user_id": user_id,
             "user_name": user_name,
             "review_type": "mixed",
@@ -126,43 +141,12 @@ async def run_review(
             "violations": all_violations,
             "warnings": all_warnings,
             "passed": all_passed,
-            "summary": final_summary
+            "summary": final_summary,
+            "review_id": insert_resp.data[0]["id"] if insert_resp.data else None
         }
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/email-report")
-def email_report(req: EmailReportRequest, authorization: str = Header(...)):
-    try:
-        svc = get_service_client()
-        payload = verify_token(authorization)
-        user_id = payload["user_id"]
-
-        auth_page = svc.auth.admin.list_users()
-        auth_map = {u.id: u.email for u in auth_page}
-        sender_email = auth_map.get(user_id, "")
-
-        from backend.services.email_service import send_review_report
-        send_review_report(
-            from_email=sender_email,
-            to_emails=req.recipients,
-            user_name=req.user_name,
-            result=req.review_result,
-            repo_url=req.repo_url
-        )
-        return {"message": "Report emailed successfully"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"EMAIL REPORT ERROR: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-class EmailReportRequest(BaseModel):
-    recipients: list[str]
-    review_result: dict
-    user_name: str
-    repo_url: str = ""
 
 class PasteReviewRequest(BaseModel):
     review_type: str
@@ -179,7 +163,7 @@ async def paste_review(req: PasteReviewRequest, authorization: str = Header(...)
         rules = load_rules(req.review_type)
         result = review_code(req.code, rules, req.review_type)
 
-        svc.table("reviews").insert({
+        insert_resp = svc.table("reviews").insert({
             "user_id": user_id,
             "user_name": req.user_name,
             "review_type": req.review_type,
@@ -191,6 +175,8 @@ async def paste_review(req: PasteReviewRequest, authorization: str = Header(...)
             "summary": result["summary"]
         }).execute()
 
+        review_id = insert_resp.data[0]["id"] if insert_resp.data else None
+        result["review_id"] = review_id
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
