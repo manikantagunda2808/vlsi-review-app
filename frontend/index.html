@@ -95,25 +95,6 @@
       margin-top: 8px;
       display: none;
     }
-    .success-msg {
-      font-size: 12px;
-      color: #16a34a;
-      margin-top: 8px;
-      display: none;
-      text-align: center;
-    }
-    .forgot-link {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 12px;
-    }
-    .forgot-link span {
-      color: #2D3270;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-    .forgot-form { display: none; }
-    .forgot-form.active { display: block; }
   </style>
 </head>
 <body>
@@ -133,15 +114,6 @@
     <input type="password" id="loginPassword" placeholder="Enter your password">
     <button id="loginBtn" onclick="login()">Login</button>
     <div class="error" id="loginError"></div>
-    <div class="forgot-link"><span onclick="showForgotForm()">Forgot password?</span></div>
-    <div class="forgot-form" id="forgotForm">
-      <label>Email (@vaaluka.com)</label>
-      <input type="email" id="forgotEmail" placeholder="you@vaaluka.com">
-      <button id="forgotBtn" onclick="forgotPassword()">Reset Password</button>
-      <div class="success-msg" id="forgotSuccess">Password has been reset. Contact your admin to receive the new temporary password.</div>
-      <div class="error" id="forgotError"></div>
-      <div class="back-link" style="text-align:center;margin-top:8px;font-size:12px;color:var(--muted)"><span style="color:#2D3270;cursor:pointer" onclick="hideForgotForm()">← Back to login</span></div>
-    </div>
   </div>
 
   <div class="form-pane" id="paneSignup">
@@ -166,60 +138,6 @@
     document.getElementById("paneSignup").classList.toggle("active", mode === "signup");
     document.getElementById("loginError").style.display = "none";
     document.getElementById("signupError").style.display = "none";
-    hideForgotForm();
-  }
-
-  function showForgotForm() {
-    document.getElementById("loginEmail").disabled = true;
-    document.getElementById("loginPassword").disabled = true;
-    document.getElementById("loginBtn").disabled = true;
-    document.querySelector(".forgot-link").style.display = "none";
-    document.getElementById("forgotForm").classList.add("active");
-    document.getElementById("forgotSuccess").style.display = "none";
-    document.getElementById("forgotError").style.display = "none";
-  }
-
-  function hideForgotForm() {
-    document.getElementById("loginEmail").disabled = false;
-    document.getElementById("loginPassword").disabled = false;
-    document.getElementById("loginBtn").disabled = false;
-    document.querySelector(".forgot-link").style.display = "";
-    document.getElementById("forgotForm").classList.remove("active");
-  }
-
-  async function forgotPassword() {
-    const email = document.getElementById("forgotEmail").value.trim().toLowerCase();
-    const btn = document.getElementById("forgotBtn");
-    const errorEl = document.getElementById("forgotError");
-    const successEl = document.getElementById("forgotSuccess");
-
-    if (!email.endsWith("@vaaluka.com")) {
-      errorEl.textContent = "Only @vaaluka.com emails allowed";
-      errorEl.style.display = "block";
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = "Resetting...";
-    errorEl.style.display = "none";
-    successEl.style.display = "none";
-
-    const res = await fetch(`${API}/auth/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-
-    btn.disabled = false;
-    btn.textContent = "Reset Password";
-
-    if (res.ok) {
-      successEl.style.display = "block";
-    } else {
-      const data = await res.json();
-      errorEl.textContent = data.detail || "Reset failed";
-      errorEl.style.display = "block";
-    }
   }
 
   function handleAuthResponse(res, data) {

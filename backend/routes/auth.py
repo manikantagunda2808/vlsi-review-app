@@ -20,6 +20,11 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class ChangePasswordRequest(BaseModel):
+    email: str
+    old_password: str
+    new_password: str
+
 @router.post("/signup")
 def signup(req: SignupRequest):
     if not req.email.lower().endswith("@vaaluka.com"):
@@ -136,40 +141,40 @@ def list_users(authorization: str = Header(...)):
 
     return result
 
-@router.post("/forgot-password")
-def forgot_password(req: LoginRequest):
+@router.post("/change-password")
+def change_password(req: ChangePasswordRequest):
     email = req.email.lower()
     if not email.endswith("@vaaluka.com"):
         raise HTTPException(status_code=400, detail="Only @vaaluka.com emails allowed")
 
-    svc = get_service_client()
-    try:
-        page = svc.auth.admin.list_users()
-        user = next((u for u in page if u.email == email), None)
-        if not user:
-            raise HTTPException(status_code=404, detail="Email not found")
-        return {"message": "Password reset initiated. Contact your admin."}
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(status_code=400, detail="Failed to process request")
+    url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
+    payload = json.dumps({"email": email, "password": req.old_password}).encode()
 
-@router.post("/users/{user_id}/reset-password")
-def reset_user_password(user_id: str, authorization: str = Header(...)):
-    payload = verify_token(authorization)
-    svc = get_service_client()
-
-    caller = svc.table("profiles").select("*").eq("id", payload["user_id"]).single().execute()
-    if caller.data["role"] != "senior":
-        raise HTTPException(status_code=403, detail="Only seniors can reset passwords")
-
-    temp_password = "Temp@" + "".join(secrets.choice(string.digits) for _ in range(6))
+    request = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Content-Type": "application/json",
+        },
+        method="POST"
+    )
 
     try:
-        svc.auth.admin.update_user_by_id(user_id, {"password": temp_password})
-        return {"message": "Password reset successfully", "temp_password": temp_password}
+        response = urllib.request.urlopen(request)
+        body = json.loads(response.read().decode())
+        user_id = body["user"]["id"]
+    except HTTPError:
+        raise HTTPException(status_code=401, detail="Old password is incorrect")
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to reset password: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to verify password: {str(e)}")
+
+    svc = get_service_client()
+    try:
+        svc.auth.admin.update_user_by_id(user_id, {"password": req.new_password})
+        return {"message": "Password changed successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to change password: {str(e)}")
 
 @router.delete("/users/{user_id}")
 def delete_user(user_id: str, authorization: str = Header(...)):

@@ -297,6 +297,7 @@
   </div>
   <div class="navbar-right">
     <span class="user-name" id="welcomeMsg"></span>
+    <span style="font-size:12px;color:var(--accent);cursor:pointer;font-family:var(--mono)" onclick="openChangePasswordModal()">change password</span>
     <span class="logout-btn" onclick="logout()">logout →</span>
   </div>
 </div>
@@ -413,6 +414,27 @@
   </div>
 </div>
 
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="changePwdModal">
+  <div class="modal" style="width:420px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div style="font-size:16px;font-weight:700;color:var(--text)">Change Password</div>
+      <button onclick="closeChangePasswordModal()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:4px;line-height:1">&times;</button>
+    </div>
+    <div id="changePwdError" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:1rem;font-size:13px;font-weight:500;background:rgba(220,38,38,0.1);color:var(--danger)"></div>
+    <div id="changePwdSuccess" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:1rem;font-size:13px;font-weight:500;background:rgba(22,163,74,0.1);color:var(--success)"></div>
+    <label>Current Password</label>
+    <input type="password" id="changeOldPwd" placeholder="Enter current password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;margin-bottom:1.2rem">
+    <label>New Password</label>
+    <input type="password" id="changeNewPwd" placeholder="Enter new password" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;margin-bottom:0.5rem">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:1.2rem;font-family:var(--mono)">Min 6 characters</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1rem">
+      <button onclick="closeChangePasswordModal()" style="padding:10px 20px;background:var(--surface);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button class="btn-primary" id="changePwdBtn" onclick="changePassword()" style="width:auto;min-width:130px">Change Password</button>
+    </div>
+  </div>
+</div>
+
 <!-- Email Report Modal -->
 <div class="modal-overlay" id="emailModal">
   <div class="modal" style="width:520px">
@@ -475,6 +497,66 @@
   let zipReviewChatHistory = [];
 
   function logout() { localStorage.clear(); window.location.href = "/"; }
+
+  function openChangePasswordModal() {
+    document.getElementById("changeOldPwd").value = "";
+    document.getElementById("changeNewPwd").value = "";
+    document.getElementById("changePwdError").style.display = "none";
+    document.getElementById("changePwdSuccess").style.display = "none";
+    document.getElementById("changePwdModal").classList.add("open");
+  }
+
+  function closeChangePasswordModal() {
+    document.getElementById("changePwdModal").classList.remove("open");
+  }
+
+  async function changePassword() {
+    const oldPwd = document.getElementById("changeOldPwd").value;
+    const newPwd = document.getElementById("changeNewPwd").value;
+    const errorEl = document.getElementById("changePwdError");
+    const successEl = document.getElementById("changePwdSuccess");
+    const btn = document.getElementById("changePwdBtn");
+
+    if (!oldPwd || !newPwd) {
+      errorEl.textContent = "Both fields are required";
+      errorEl.style.display = "block";
+      successEl.style.display = "none";
+      return;
+    }
+    if (newPwd.length < 6) {
+      errorEl.textContent = "New password must be at least 6 characters";
+      errorEl.style.display = "block";
+      successEl.style.display = "none";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Changing...";
+    errorEl.style.display = "none";
+    successEl.style.display = "none";
+
+    const res = await fetch(`${API}/auth/change-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: localStorage.getItem("email"), old_password: oldPwd, new_password: newPwd })
+    });
+
+    btn.disabled = false;
+    btn.textContent = "Change Password";
+
+    if (res.ok) {
+      successEl.textContent = "Password changed successfully!";
+      successEl.style.display = "block";
+      errorEl.style.display = "none";
+      document.getElementById("changeOldPwd").value = "";
+      document.getElementById("changeNewPwd").value = "";
+    } else {
+      const data = await res.json();
+      errorEl.textContent = data.detail || "Failed to change password";
+      errorEl.style.display = "block";
+      successEl.style.display = "none";
+    }
+  }
 
   function switchMain(tab) {
     const tabs = ["review", "chat", "history"];
