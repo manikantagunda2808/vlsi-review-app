@@ -451,7 +451,8 @@
       violations: review.violations || [],
       warnings: review.warnings || [],
       passed: review.passed || [],
-      summary: review.summary
+      summary: review.summary,
+      review_id: review.id
     };
     const s = document.getElementById("emailModal");
     document.getElementById("modalScore").textContent = review.score;
