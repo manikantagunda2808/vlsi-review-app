@@ -161,14 +161,14 @@
       if (data.violations && data.violations.length) {
         html += '<div class="section-title">Violations \u2014 must fix</div>';
         data.violations.forEach(v => {
-          html += `<div class="finding violation"><span class="rule-id">${v.rule_id}</span>${v.message} <span style="color:var(--muted);font-size:11px;font-family:var(--mono)">\u00B7 line ${v.line}</span></div>`;
+          html += `<div class="finding violation"><span class="rule-id">${v.rule_id}</span><span style="color:var(--muted);font-size:11px;"> ${v.rule || ''}</span> ${v.message} <span style="color:var(--muted);font-size:11px;font-family:var(--mono)">\u00B7 line ${v.line}</span></div>`;
         });
       }
 
       if (data.warnings && data.warnings.length) {
         html += '<div class="section-title">Warnings</div>';
         data.warnings.forEach(w => {
-          html += `<div class="finding warning"><span class="rule-id">${w.rule_id}</span>${w.message} <span style="color:var(--muted);font-size:11px;font-family:var(--mono)">\u00B7 line ${w.line}</span></div>`;
+          html += `<div class="finding warning"><span class="rule-id">${w.rule_id}</span><span style="color:var(--muted);font-size:11px;"> ${w.rule || ''}</span> ${w.message} <span style="color:var(--muted);font-size:11px;font-family:var(--mono)">\u00B7 line ${w.line}</span></div>`;
         });
       }
 

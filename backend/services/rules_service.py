@@ -60,13 +60,13 @@ def load_rules(review_type: str) -> str:
 
 
 def load_raw_rules(review_type: str) -> dict:
-    data = _load_from_supabase(review_type)
-    if data is not None:
-        return data
     yaml_data = _load_from_yaml(review_type)
     if yaml_data is not None:
         _seed_supabase_from_yaml(review_type)
         return yaml_data
+    data = _load_from_supabase(review_type)
+    if data is not None:
+        return data
     return {"rules": []}
 
 
@@ -119,7 +119,7 @@ def bulk_add_rules(review_type: str, new_rules_data: list) -> dict:
             continue
         rule_id = f"{prefix}{next_num:03d}"
         next_num += 1
-        imported.append({"id": rule_id, "severity": severity, "rule": rule})
+        imported.append({"id": rule_id, "severity": severity, "rule": rule, "check_type": "llm"})
 
     data["rules"] = existing + imported
     save_rules(review_type, data)
@@ -132,6 +132,16 @@ def update_rule_severity(review_type: str, rule_id: str, new_severity: str) -> b
     for rule in data["rules"]:
         if rule["id"] == rule_id:
             rule["severity"] = new_severity
+            save_rules(review_type, data)
+            return True
+    return False
+
+
+def update_rule_check_type(review_type: str, rule_id: str, new_check_type: str) -> bool:
+    data = load_raw_rules(review_type)
+    for rule in data["rules"]:
+        if rule["id"] == rule_id:
+            rule["check_type"] = new_check_type
             save_rules(review_type, data)
             return True
     return False

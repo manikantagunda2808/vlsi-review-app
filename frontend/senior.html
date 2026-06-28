@@ -103,6 +103,8 @@
     .rule-text { font-size: 13px; color: var(--text); flex: 1; }
     .sev-violation { color: var(--danger); font-size: 11px; font-family: var(--mono); flex-shrink: 0; }
     .sev-warning { color: var(--warn); font-size: 11px; font-family: var(--mono); flex-shrink: 0; }
+    .chk-static { color: var(--accent); font-size: 11px; font-family: var(--mono); flex-shrink: 0; }
+    .chk-llm { color: var(--warn); font-size: 11px; font-family: var(--mono); flex-shrink: 0; }
     .rule-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; padding: 0 2px; flex-shrink: 0; opacity: 0.5; }
     .rule-del:hover { opacity: 1; }
     .filter-row { display: flex; gap: 10px; margin-bottom: 1rem; }
@@ -225,6 +227,11 @@
       <select id="newSeverity">
         <option value="violation">Violation</option>
         <option value="warning">Warning</option>
+      </select>
+      <label>Check Type</label>
+      <select id="newCheckType">
+        <option value="llm">LLM (AI-evaluated)</option>
+        <option value="static">Static (regex-based)</option>
       </select>
       <label>Rule Description</label>
       <textarea id="newRuleText" style="min-height:80px" placeholder="Describe the rule..."></textarea>
@@ -965,6 +972,7 @@
             <span class="rule-id">${r.id}</span>
             <span class="rule-text">${r.rule}</span>
             <span class="sev-${r.severity}" style="cursor:pointer" onclick="toggleSeverity('${type}','${r.id}','${r.severity}')" title="Click to toggle severity">${r.severity}</span>
+            <span class="chk-${r.check_type || 'llm'}" style="cursor:pointer" onclick="toggleCheckType('${type}','${r.id}','${r.check_type || 'llm'}')" title="Click to toggle check type">${r.check_type || 'llm'}</span>
             <button class="rule-del" onclick="deleteRule('${type}','${r.id}')" title="Delete rule">✕</button>
           </div>`;
       });
@@ -988,7 +996,8 @@
         throw new Error(`GET failed: ${getRes.status} - ${errText}`);
       }
       const existing = await getRes.json();
-      existing.rules.push({ id, severity, rule });
+      const checkType = document.getElementById("newCheckType").value;
+      existing.rules.push({ id, severity, rule, check_type: checkType });
       const res = await fetch(`${API}/rules/${type}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -1022,6 +1031,25 @@
     } catch (err) {
       console.error("deleteRule error:", err);
       alert("Failed to delete rule: " + err.message);
+    }
+  }
+
+  async function toggleCheckType(type, ruleId, current) {
+    const next = current === 'static' ? 'llm' : 'static';
+    try {
+      const res = await fetch(`${API}/rules/${type}/${ruleId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ check_type: next })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`PATCH failed: ${res.status} - ${errText}`);
+      }
+      loadRules();
+    } catch (err) {
+      console.error("toggleCheckType error:", err);
+      alert("Failed to toggle check type: " + err.message);
     }
   }
 

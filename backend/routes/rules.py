@@ -1,6 +1,6 @@
 import sys
 from fastapi import APIRouter, HTTPException, Header
-from backend.services.rules_service import load_raw_rules, save_rules, update_rule_severity, delete_rule as delete_rule_from_file, bulk_add_rules
+from backend.services.rules_service import load_raw_rules, save_rules, update_rule_severity, update_rule_check_type, delete_rule as delete_rule_from_file, bulk_add_rules
 from backend.services.supabase_service import get_service_client
 from backend.services.auth_utils import verify_token
 
@@ -71,16 +71,29 @@ def patch_rule(review_type: str, rule_id: str, body: dict, authorization: str = 
         if profile.data["role"] != "senior":
             raise HTTPException(status_code=403, detail="Only seniors can update rules")
 
-        new_severity = body.get("severity")
-        if new_severity not in ("violation", "warning"):
-            raise HTTPException(status_code=400, detail="Invalid severity")
+        updated = False
+        messages = []
 
-        updated = update_rule_severity(review_type, rule_id, new_severity)
+        new_severity = body.get("severity")
+        if new_severity:
+            if new_severity not in ("violation", "warning"):
+                raise HTTPException(status_code=400, detail="Invalid severity")
+            updated = update_rule_severity(review_type, rule_id, new_severity)
+            messages.append(f"severity→{new_severity}")
+
+        new_check_type = body.get("check_type")
+        if new_check_type:
+            if new_check_type not in ("static", "llm"):
+                raise HTTPException(status_code=400, detail="Invalid check_type")
+            updated = update_rule_check_type(review_type, rule_id, new_check_type) or updated
+            messages.append(f"check_type→{new_check_type}")
+
         if not updated:
             raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
 
-        print(f"[rules] {review_type}/{rule_id} severity→{new_severity} by {payload['user_id']}", file=sys.stderr)
-        return {"message": f"Rule {rule_id} updated to {new_severity}"}
+        msg = ", ".join(messages)
+        print(f"[rules] {review_type}/{rule_id} {msg} by {payload['user_id']}", file=sys.stderr)
+        return {"message": f"Rule {rule_id} updated: {msg}"}
 
     except HTTPException:
         raise

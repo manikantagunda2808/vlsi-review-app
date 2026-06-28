@@ -2,39 +2,49 @@ rules:
   - id: TB001
     severity: violation
     rule: "Module must have no ports — testbench is the top-level with no I/O ports"
+    check_type: static
 
   - id: TB002
     severity: violation
     rule: "DUT must be instantiated with named port connections (.port_name(signal))"
+    check_type: static
 
   - id: TB003
     severity: violation
     rule: "Clock must be generated using an initial/always block with a parameterized period"
+    check_type: static
 
   - id: TB004
     severity: violation
     rule: "Reset must be asserted for minimum 2 clock cycles at the start of simulation"
+    check_type: llm
 
   - id: TB005
     severity: violation
     rule: "All DUT inputs must be declared as reg type, outputs as wire type"
+    check_type: static
 
   - id: TB006
     severity: violation
     rule: "Simulation must have a timeout watchdog — use $finish after a reasonable delay"
+    check_type: static
 
   - id: TB007
     severity: warning
     rule: "Use $monitor or $display to log simulation activity with timestamps ($time)"
+    check_type: static
 
   - id: TB008
     severity: warning
     rule: "Use $finish with a $display PASS/FAIL message — not bare $finish"
+    check_type: static
 
   - id: TB009
     severity: warning
     rule: "Stimulus and checking should be separated into different initial/always blocks"
+    check_type: llm
 
   - id: TB010
     severity: warning
     rule: "File name should follow format: tb_<module_name>.v"
+    check_type: static

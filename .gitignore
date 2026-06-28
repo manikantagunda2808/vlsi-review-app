@@ -7,3 +7,10 @@ venv/
 *.egg-info/
 dist/
 .DS_Store
+*.report.json
+*.report.txt
+.opencode/
+.playwright-mcp/
+test_*.sv
+test_tc*.txt
+test_rtl_rules.py
